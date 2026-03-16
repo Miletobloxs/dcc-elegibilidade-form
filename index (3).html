@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DCC — Elegibilidade do Tomador | Bloxs Capital Partners</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
+/* ── LOGIN ── */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.lbox{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.llogo{display:flex;align-items:center;gap:8px;margin-bottom:1.5rem}
+.llogo-name{font-size:15px;font-weight:700;color:#1A2F5A}
+.llogo-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:#1A2F5A;color:#fff}
+.lbox h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.lbox p{font-size:13px;color:#64748b;margin-bottom:1.5rem}
+.lf{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.lf label{font-size:12px;font-weight:600;color:#475569}
+.lf input{padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;color:#0f172a;width:100%;transition:border .15s}
+.lf input:focus{outline:none;border-color:#1A2F5A}
+.lbtn{width:100%;padding:11px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;background:#1A2F5A;color:#fff;margin-top:6px;transition:opacity .15s}
+.lbtn:hover{opacity:.88}
+.lerr{font-size:13px;color:#991b1b;background:#fee2e2;padding:8px 12px;border-radius:8px;margin-top:12px;display:none;border:1px solid #fca5a5}
+.ldivider{text-align:center;font-size:12px;color:#94a3b8;margin:16px 0}
+.lbtn-orig{width:100%;padding:11px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #1A2F5A;background:#fff;color:#1A2F5A;transition:background .15s}
+.lbtn-orig:hover{background:#f8fafc}
+/* ── FORM ── */
+#app{display:none;max-width:860px;margin:0 auto;padding:1.5rem 1rem 5rem}
+.hdr{background:#1A2F5A;color:#fff;padding:1.25rem 1.5rem;border-radius:12px;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.hdr h1{font-size:18px;font-weight:700;margin:0}
+.hdr p{font-size:12px;opacity:.7;margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-user{font-size:12px;opacity:.85}
+.lout{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;cursor:pointer;font-family:inherit}
+.lout:hover{background:rgba(255,255,255,.12)}
+.steps{display:flex;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:1.5rem;background:#fff}
+.stp{flex:1;padding:9px 4px;text-align:center;font-size:10px;cursor:pointer;border-right:1px solid #e2e8f0;background:#f8fafc;color:#64748b;transition:background .15s;line-height:1.4}
+.stp:last-child{border-right:none}
+.stp.on{background:#fff;color:#0f172a;font-weight:700}
+.stp.ok{background:#f0fdf4;color:#15803d}
+.stp b{display:block;font-size:9px;font-weight:400;color:#94a3b8;margin-bottom:1px}
+.sec{display:none}.sec.on{display:block}
+.stit{font-size:17px;font-weight:700;margin-bottom:4px}
+.sdesc{font-size:13px;color:#64748b;margin-bottom:1.25rem}
+.sub{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin:1.25rem 0 .75rem;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g1{display:grid;grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:12px;font-weight:600;color:#475569}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:#fff;color:#0f172a;font-family:inherit;transition:border .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:#1A2F5A}
+.fg textarea{resize:vertical;min-height:72px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px}
+.ct{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.cn{font-size:11px;font-weight:700;color:#94a3b8;min-width:28px;padding-top:2px}
+.cb{flex:1}
+.ctit{font-size:14px;margin-bottom:4px;line-height:1.5}
+.cev{font-size:12px;color:#64748b;line-height:1.5}
+.tb{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;margin-left:7px;vertical-align:middle}
+.te{background:#fee2e2;color:#991b1b}.tq{background:#dbeafe;color:#1e40af}.tl{background:#fef3c7;color:#92400e}
+.cr{display:grid;gap:8px;align-items:start}
+.cr3{grid-template-columns:1fr 1fr 100px}.cr2{grid-template-columns:1fr 1fr}
+.ss{padding:7px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;width:100%;font-family:inherit;background:#fff}
+.ss.ap{background:#d1fae5;color:#065f46;border-color:#6ee7b7}
+.ss.pa{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.ss.rp{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.oi{padding:7px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;width:100%;font-family:inherit}
+.pts{font-size:12px;text-align:center;padding:7px 4px;color:#64748b;font-weight:600}
+.sbx{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.mts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1rem}
+.mt{background:#f8fafc;border-radius:8px;padding:.75rem;border:1px solid #f1f5f9}
+.ml{font-size:11px;color:#64748b;margin-bottom:4px;font-weight:600}
+.mv{font-size:22px;font-weight:700}
+.bw{height:10px;background:#e2e8f0;border-radius:100px;overflow:hidden;margin-bottom:1rem}
+.bf{height:100%;border-radius:100px;transition:width .4s}
+.vd{padding:12px 16px;border-radius:10px;font-size:14px;font-weight:700;text-align:center;margin-bottom:.75rem}
+.sprd{text-align:center;margin-top:.5rem}
+.sval{display:inline-block;font-size:17px;font-weight:700;padding:8px 20px;border-radius:10px;background:#dbeafe;color:#1e40af}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:2rem;padding-top:1rem;border-top:1px solid #e2e8f0}
+.btn{padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#0f172a;font-family:inherit;transition:all .15s}
+.btn:hover{background:#f8fafc}
+.btnp{background:#1A2F5A;color:#fff;border-color:#1A2F5A}
+.btnp:hover{opacity:.88;background:#1A2F5A}
+.sst{font-size:13px;color:#64748b}
+.sst.ok{color:#065f46;font-weight:600}
+.sst.err{color:#991b1b;font-weight:600}
+.toast{position:fixed;bottom:24px;right:24px;background:#1A2F5A;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+.toast.on{opacity:1}
+.toast.err-t{background:#991b1b}
+.badge-orig{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;background:#fef3c7;color:#92400e;margin-left:8px;vertical-align:middle}
+@media(max-width:600px){.g2,.mts{grid-template-columns:1fr}.cr3{grid-template-columns:1fr 1fr}.steps{flex-wrap:wrap}.stp{min-width:25%}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lbox">
+    <div class="llogo">
+      <span class="llogo-name">Bloxs Capital Partners</span>
+      <span class="llogo-badge">DCC</span>
+    </div>
+    <h2>Checklist de Elegibilidade</h2>
+    <p>Acesso para analistas internos e originadores credenciados.</p>
+    <div class="lf"><label>E-mail</label><input type="email" id="lemail" placeholder="seu@email.com.br" autocomplete="email"></div>
+    <div class="lf"><label>Senha</label><input type="password" id="lsenha" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+    <button class="lbtn" onclick="login()">Entrar como Analista</button>
+    <div class="ldivider">ou</div>
+    <button class="lbtn-orig" onclick="entrarOriginator()">Entrar como Originador</button>
+    <div class="lerr" id="lerr">E-mail ou senha incorretos.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hdr">
+    <div>
+      <h1>Checklist de Elegibilidade — Protocolo DCC <span class="badge-orig" id="badge-orig" style="display:none">Originador</span></h1>
+      <p>Score calculado automaticamente. Dados salvos no Supabase.</p>
+    </div>
+    <div class="hdr-right">
+      <span class="hdr-user" id="hdr-user"></span>
+      <button class="lout" onclick="logout()">Sair</button>
+    </div>
+  </div>
+  <div class="steps" id="steps"></div>
+  <div id="secs"></div>
+  <div class="nav">
+    <button class="btn" id="bprev" onclick="nav(-1)">← Anterior</button>
+    <span class="sst" id="sst"></span>
+    <button class="btn btnp" id="bnext" onclick="nav(1)">Próximo →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+var SB  = 'https://herydrrdurduylotuviy.supabase.co';
+var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlcnlkcnJkdXJkdXlsb3R1dml5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NzA2NzUsImV4cCI6MjA4OTI0NjY3NX0.WBhhfbxqXbww8jVmf_J7VsXv6ptTCLnamIiupaWwhqc';
+var H   = {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+
+// ── MD5 (login local contra hash) ────────────────────────────────────────────
+function md5(str){function rl(n,c){return(n<<c)|(n>>>(32-c))}function ad(a,b){var l=(a&0xFFFF)+(b&0xFFFF);return(((a>>16)+(b>>16)+(l>>16))<<16)|(l&0xFFFF)}function cm(q,a,b,x,s,t){return ad(rl(ad(ad(a,q),ad(x,t)),s),b)}function ff(a,b,c,d,x,s,t){return cm((b&c)|((~b)&d),a,b,x,s,t)}function gg(a,b,c,d,x,s,t){return cm((b&d)|(c&(~d)),a,b,x,s,t)}function hh(a,b,c,d,x,s,t){return cm(b^c^d,a,b,x,s,t)}function ii(a,b,c,d,x,s,t){return cm(c^(b|(~d)),a,b,x,s,t)}function sb(str){var txt='';var nBytes=0;for(var n=0;n<str.length;n++){var c=str.charCodeAt(n);if(c<128){txt+=String.fromCharCode(c);nBytes++;}else if((c>127)&&(c<2048)){txt+=String.fromCharCode((c>>6)|192);txt+=String.fromCharCode((c&63)|128);nBytes+=2;}else{txt+=String.fromCharCode((c>>12)|224);txt+=String.fromCharCode(((c>>6)&63)|128);txt+=String.fromCharCode((c&63)|128);nBytes+=3;}}return txt}str=sb(str);var x=Array();var k,AA,BB,CC,DD,a,b,c,d;var S11=7,S12=12,S13=17,S14=22;var S21=5,S22=9,S23=14,S24=20;var S31=4,S32=11,S33=16,S34=23;var S41=6,S42=10,S43=15,S44=21;str+=String.fromCharCode(128);var tl=str.length/4+2;var N=Math.ceil(tl/16)*16;var M=new Array(N);for(k=0;k<N;k++)M[k]=0;for(k=0;k<str.length;k++)M[k>>2]|=str.charCodeAt(k)<<((k%4)*8);M[k>>2]|=0x80<<((k%4)*8);M[N-2]=(str.length-1)*8;var H0=0x67452301,H1=0xEFCDAB89,H2=0x98BADCFE,H3=0x10325476;for(k=0;k<N;k+=16){AA=H0;BB=H1;CC=H2;DD=H3;a=ff(H0,H1,H2,H3,M[k+0],S11,0xD76AA478);H3=ff(H3,a,H1,H2,M[k+1],S12,0xE8C7B756);H2=ff(H2,H3,a,H1,M[k+2],S13,0x242070DB);H1=ff(H1,H2,H3,a,M[k+3],S14,0xC1BDCEEE);a=ff(a,H1,H2,H3,M[k+4],S11,0xF57C0FAF);H3=ff(H3,a,H1,H2,M[k+5],S12,0x4787C62A);H2=ff(H2,H3,a,H1,M[k+6],S13,0xA8304613);H1=ff(H1,H2,H3,a,M[k+7],S14,0xFD469501);a=ff(a,H1,H2,H3,M[k+8],S11,0x698098D8);H3=ff(H3,a,H1,H2,M[k+9],S12,0x8B44F7AF);H2=ff(H2,H3,a,H1,M[k+10],S13,0xFFFF5BB1);H1=ff(H1,H2,H3,a,M[k+11],S14,0x895CD7BE);a=ff(a,H1,H2,H3,M[k+12],S11,0x6B901122);H3=ff(H3,a,H1,H2,M[k+13],S12,0xFD987193);H2=ff(H2,H3,a,H1,M[k+14],S13,0xA679438E);H1=ff(H1,H2,H3,a,M[k+15],S14,0x49B40821);a=gg(a,H1,H2,H3,M[k+1],S21,0xF61E2562);H3=gg(H3,a,H1,H2,M[k+6],S22,0xC040B340);H2=gg(H2,H3,a,H1,M[k+11],S23,0x265E5A51);H1=gg(H1,H2,H3,a,M[k+0],S24,0xE9B6C7AA);a=gg(a,H1,H2,H3,M[k+5],S21,0xD62F105D);H3=gg(H3,a,H1,H2,M[k+10],S22,0x02441453);H2=gg(H2,H3,a,H1,M[k+15],S23,0xD8A1E681);H1=gg(H1,H2,H3,a,M[k+4],S24,0xE7D3FBC8);a=gg(a,H1,H2,H3,M[k+9],S21,0x21E1CDE6);H3=gg(H3,a,H1,H2,M[k+14],S22,0xC33707D6);H2=gg(H2,H3,a,H1,M[k+3],S23,0xF4D50D87);H1=gg(H1,H2,H3,a,M[k+8],S24,0x455A14ED);a=gg(a,H1,H2,H3,M[k+13],S21,0xA9E3E905);H3=gg(H3,a,H1,H2,M[k+2],S22,0xFCEFA3F8);H2=gg(H2,H3,a,H1,M[k+7],S23,0x676F02D9);H1=gg(H1,H2,H3,a,M[k+12],S24,0x8D2A4C8A);a=hh(a,H1,H2,H3,M[k+5],S31,0xFFFA3942);H3=hh(H3,a,H1,H2,M[k+8],S32,0x8771F681);H2=hh(H2,H3,a,H1,M[k+11],S33,0x6D9D6122);H1=hh(H1,H2,H3,a,M[k+14],S34,0xFDE5380C);a=hh(a,H1,H2,H3,M[k+1],S31,0xA4BEEA44);H3=hh(H3,a,H1,H2,M[k+4],S32,0x4BDECFA9);H2=hh(H2,H3,a,H1,M[k+7],S33,0xF6BB4B60);H1=hh(H1,H2,H3,a,M[k+10],S34,0xBEBFBC70);a=hh(a,H1,H2,H3,M[k+13],S31,0x289B7EC6);H3=hh(H3,a,H1,H2,M[k+0],S32,0xEAA127FA);H2=hh(H2,H3,a,H1,M[k+3],S33,0xD4EF3085);H1=hh(H1,H2,H3,a,M[k+6],S34,0x04881D05);a=hh(a,H1,H2,H3,M[k+9],S31,0xD9D4D039);H3=hh(H3,a,H1,H2,M[k+12],S32,0xE6DB99E5);H2=hh(H2,H3,a,H1,M[k+15],S33,0x1FA27CF8);H1=hh(H1,H2,H3,a,M[k+2],S34,0xC4AC5665);a=ii(a,H1,H2,H3,M[k+0],S41,0xF4292244);H3=ii(H3,a,H1,H2,M[k+7],S42,0x432AFF97);H2=ii(H2,H3,a,H1,M[k+14],S43,0xAB9423A7);H1=ii(H1,H2,H3,a,M[k+5],S44,0xFC93A039);a=ii(a,H1,H2,H3,M[k+12],S41,0x655B59C3);H3=ii(H3,a,H1,H2,M[k+3],S42,0x8F0CCC92);H2=ii(H2,H3,a,H1,M[k+10],S43,0xFFEFF47D);H1=ii(H1,H2,H3,a,M[k+1],S44,0x85845DD1);a=ii(a,H1,H2,H3,M[k+8],S41,0x6FA87E4F);H3=ii(H3,a,H1,H2,M[k+15],S42,0xFE2CE6E0);H2=ii(H2,H3,a,H1,M[k+6],S43,0xA3014314);H1=ii(H1,H2,H3,a,M[k+13],S44,0x4E0811A1);a=ii(a,H1,H2,H3,M[k+4],S41,0xF7537E82);H3=ii(H3,a,H1,H2,M[k+11],S42,0xBD3AF235);H2=ii(H2,H3,a,H1,M[k+2],S43,0x2AD7D2BB);H1=ii(H1,H2,H3,a,M[k+9],S44,0xEB86D391);H0=ad(H0,AA);H1=ad(H1,BB);H2=ad(H2,CC);H3=ad(H3,DD)}function rh(n){return ('0'+((n)&0xFF).toString(16)).slice(-2)+('0'+(((n)>>8)&0xFF).toString(16)).slice(-2)+('0'+(((n)>>16)&0xFF).toString(16)).slice(-2)+('0'+(((n)>>24)&0xFF).toString(16)).slice(-2)}return(rh(H0)+rh(H1)+rh(H2)+rh(H3)).toLowerCase()}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+var USER = null; // {id, nome, email, tipo: 'analista'|'originador'}
+
+async function login(){
+  var email = document.getElementById('lemail').value.trim();
+  var senha = document.getElementById('lsenha').value;
+  var err   = document.getElementById('lerr');
+  err.style.display = 'none';
+  if(!email || !senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return;}
+  var hash = md5(senha);
+  try{
+    var r = await fetch(SB+'/rest/v1/analistas?email=eq.'+encodeURIComponent(email)+'&senha_hash=eq.'+hash+'&ativo=eq.true&select=id,nome,email',{headers:H});
+    var d = await r.json();
+    if(!d||d.length===0){err.textContent='E-mail ou senha incorretos.';err.style.display='block';return;}
+    USER = {id:d[0].id, nome:d[0].nome, email:d[0].email, tipo:'analista'};
+    sessionStorage.setItem('dcc_user', JSON.stringify(USER));
+    showApp();
+  }catch(e){err.textContent='Erro de conexão. Tente novamente.';err.style.display='block';}
+}
+
+function entrarOriginator(){
+  USER = {id:null, nome:'Originador', email:'', tipo:'originador'};
+  sessionStorage.setItem('dcc_user', JSON.stringify(USER));
+  showApp();
+}
+
+function logout(){
+  sessionStorage.removeItem('dcc_user');
+  USER = null; rid = null;
+  document.getElementById('login').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+
+function showApp(){
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('hdr-user').textContent = USER.nome + (USER.email ? ' · '+USER.email : '');
+  document.getElementById('badge-orig').style.display = USER.tipo==='originador' ? 'inline-block' : 'none';
+  if(!built){ buildSteps(); buildSecs(); goTo(0); built=true; }
+}
+
+window.addEventListener('load', function(){
+  var s = sessionStorage.getItem('dcc_user');
+  if(s){try{USER=JSON.parse(s); showApp();}catch(e){}}
+});
+
+// ── DADOS ────────────────────────────────────────────────────────────────────
+var CR = [
+  {s:'s1',n:'1.1',t:'PJ regularmente constituida no Brasil',tp:'EL',el:true,ev:'Contrato social + certidao de registro (Junta Comercial ou CNPJ ativo)',p:10,v:false},
+  {s:'s1',n:'1.2',t:'CNPJ ativo ha no minimo 24 meses',tp:'EL',el:true,ev:'Comprovante de situacao cadastral Receita Federal',p:8,v:false},
+  {s:'s1',n:'1.3',t:'Sem falencia ou recuperacao judicial em curso',tp:'EL',el:true,ev:'Certidao negativa de falencia/recuperacao (TJ da sede)',p:10,v:false},
+  {s:'s1',n:'1.4',t:'Socios sem condenacao criminal relevante (5 anos)',tp:'EL',el:true,ev:'Certidoes negativas estadual e federal dos socios >= 20%',p:8,v:false},
+  {s:'s1',n:'1.5',t:'Estrutura societaria clara e documentada (sem offshores opacas)',tp:'QL',el:false,ev:'Organograma societario + declaracao de beneficiario final (BACEN)',p:5,v:false},
+  {s:'s1',n:'1.6',t:'Holding BVI ou offshore: documentacao UBO completa',tp:'QL',el:false,ev:'Certificado BVI + declaracao beneficiario final + procuracao vigente',p:4,v:false},
+  {s:'s2',n:'2.1',t:'Receita bruta anual >= R$ 5.000.000 (ultimos 12 meses)',tp:'EL',el:true,ev:'DRE auditado ou declaracao contabil CRC + SPED fiscal',p:10,v:true,vl:'Receita bruta (R$)'},
+  {s:'s2',n:'2.2',t:'EBITDA positivo nos ultimos 2 exercicios consecutivos',tp:'EL',el:true,ev:'DRE dos 2 ultimos exercicios auditados',p:8,v:true,vl:'EBITDA ultimo exercicio (R$)'},
+  {s:'s2',n:'2.3',t:'Divida liquida / EBITDA <= 4,0x',tp:'QT',el:false,ev:'Balanco + DRE auditados - calculo pelo analista Bloxs',p:7,v:true,vl:'Divida liq./EBITDA (x)'},
+  {s:'s2',n:'2.4',t:'Cobertura de juros >= 1,5x (EBIT / Desp. financeira)',tp:'QT',el:false,ev:'DRE auditado - calculo pelo analista Bloxs',p:6,v:true,vl:'EBIT/Desp.fin (x)'},
+  {s:'s2',n:'2.5',t:'Capital de giro positivo (Ativo Circulante > Passivo Circulante)',tp:'QT',el:false,ev:'Balanco patrimonial auditado',p:5,v:true,vl:'Capital de giro (R$)'},
+  {s:'s2',n:'2.6',t:'Sem cheques devolvidos, protestos ou execucoes fiscais (24m)',tp:'QL',el:false,ev:'Serasa/SCR + certidao de protestos + certidao de debitos fiscais',p:5,v:false},
+  {s:'s2',n:'2.7',t:'Projecoes financeiras 18 meses (cenario base e estressado)',tp:'QL',el:false,ev:'Modelo financeiro com premissas assinado pelo CFO',p:4,v:false},
+  {s:'s3',n:'3.1',t:'Capacidade de constituir >= 20% do CR em USDC',tp:'EL',el:true,ev:'Extrato de saldo em exchange regulamentada - data <= 7 dias',p:10,v:false},
+  {s:'s3',n:'3.2',t:'Origem licita do USDC documentada',tp:'EL',el:true,ev:'Declaracao formal de origem licita + comprovante de aquisicao via canal regulado',p:10,v:false},
+  {s:'s3',n:'3.3',t:'Tomador aceita infraestrutura Rise/Utila (MPC)',tp:'EL',el:true,ev:'Termo de aceite Rise Finance + declaracao de nao-custodia',p:8,v:false},
+  {s:'s3',n:'3.4',t:'Enderecos blockchain fora de listas de sancoes (OFAC/FinCEN)',tp:'EL',el:true,ev:'Screening AML via AiPrise/Sumsub - relatorio Rise onboarding',p:10,v:false},
+  {s:'s3',n:'3.5',t:'Tomador compreende e aceita execucao automatica via smart contract',tp:'QL',el:false,ev:'Declaracao de ciencia e aceite do mecanismo DCC assinada pelo representante',p:5,v:false},
+  {s:'s3',n:'3.6',t:'Capacidade tecnica para operar wallet MPC (Utila)',tp:'QL',el:false,ev:'Entrevista tecnica Rise + declaracao de capacidade operacional',p:3,v:false},
+  {s:'s4',n:'4.1',t:'Quotas disponiveis para penhor >= 200% do valor do CR',tp:'EL',el:true,ev:'Contrato social/estatuto + laudo de avaliacao por avaliador independente',p:10,v:false},
+  {s:'s4',n:'4.2',t:'Quotas livres de onus, penhoras ou disputas judiciais',tp:'EL',el:true,ev:'Certidao negativa de onus reais + certidao de distribuicao civel',p:8,v:false},
+  {s:'s4',n:'4.3',t:'Socios detentores das quotas aprovam formalmente o penhor',tp:'EL',el:true,ev:'Ata de aprovacao societaria + assinatura dos socios',p:8,v:false},
+  {s:'s4',n:'4.4',t:'Laudo de avaliacao das quotas (DCF ou multiplos) - <= 90 dias',tp:'QT',el:false,ev:'Laudo assinado por avaliador independente credenciado',p:6,v:true,vl:'Valor avaliado das quotas (R$)'},
+  {s:'s4',n:'4.5',t:'Clausula de recomposicao do penhor se desvalorizacao >= 20%',tp:'QL',el:false,ev:'Previsao expressa na escritura - M2 deve confirmar inclusao',p:4,v:false},
+  {s:'s5',n:'5.1',t:'KYC completo de socios >= 20% (beneficiarios finais)',tp:'EL',el:true,ev:'Doc. identidade + comp. residencia + selfie biometrica via AiPrise/Sumsub',p:8,v:false},
+  {s:'s5',n:'5.2',t:'Socios e empresa ausentes de sancoes internacionais (OFAC, ONU, UE)',tp:'EL',el:true,ev:'Relatorio de screening AML - Rise Finance no onboarding',p:8,v:false},
+  {s:'s5',n:'5.3',t:'PEP: verificacao e declaracao formal',tp:'QL',el:false,ev:'Declaracao de nao-PEP ou analise aprofundada com aprovacao do comite Bloxs',p:5,v:false},
+  {s:'s5',n:'5.4',t:'Setor sem restricao na lista negativa Bloxs (CNAE)',tp:'EL',el:true,ev:'Verificacao interna Bloxs - CNAE principal e secundarios',p:5,v:false},
+  {s:'s5',n:'5.5',t:'Sem conflito de interesses com investidores da plataforma Bloxs',tp:'QL',el:false,ev:'Declaracao assinada pelo representante legal',p:3,v:false},
+  {s:'s6',n:'6.1',t:'Conta corrente PJ ativa em banco regulado pelo BCB',tp:'QL',el:false,ev:'Extrato bancario + comprovante de titularidade',p:3,v:false},
+  {s:'s6',n:'6.2',t:'Representante legal com poderes plenos para assinar a escritura',tp:'EL',el:true,ev:'Contrato social / procuracao com poderes expressos + doc. identidade',p:5,v:false},
+  {s:'s6',n:'6.3',t:'Aceite formal das condicoes do Protocolo DCC',tp:'EL',el:true,ev:'Termo de aceite das condicoes comerciais assinado pelo representante legal',p:5,v:false},
+  {s:'s6',n:'6.4',t:'Responsavel tecnico designado para interacao Rise/Utila',tp:'QL',el:false,ev:'Nome, cargo, email e telefone do responsavel tecnico designado',p:3,v:false},
+  {s:'s6',n:'6.5',t:'Historico no mercado de capitais (emissoes anteriores, se houver)',tp:'QL',el:false,ev:'CRI, CRA, debentures, FIDCs anteriores - documentacao das emissoes',p:3,v:false}
+];
+
+// Mapeamento exato: num -> coluna do banco (confirmado via schema)
+var KM = {
+  '1.1':'s1_1','1.2':'s1_2','1.3':'s1_3','1.4':'s1_4','1.5':'s1_5','1.6':'s1_6',
+  '2.1':'s2_1','2.2':'s2_2','2.3':'s2_3','2.4':'s2_4','2.5':'s2_5','2.6':'s2_6','2.7':'s2_7',
+  '3.1':'s3_1','3.2':'s3_2','3.3':'s3_3','3.4':'s3_4','3.5':'s3_5','3.6':'s3_6',
+  '4.1':'s4_1','4.2':'s4_2','4.3':'s4_3','4.4':'s4_4','4.5':'s4_5',
+  '5.1':'s5_1','5.2':'s5_2','5.3':'s5_3','5.4':'s5_4','5.5':'s5_5',
+  '6.1':'s6_1','6.2':'s6_2','6.3':'s6_3','6.4':'s6_4','6.5':'s6_5'
+};
+
+var TOTAL = CR.reduce(function(a,c){return a+c.p},0);
+var SECS  = ['ficha','s1','s2','s3','s4','s5','s6','score'];
+var SL    = ['Ficha','1.Jur.','2.Fin.','3.Colat.','4.Penhor','5.Comp.','6.Oper.','Score'];
+
+var cur=0, rid=null, built=false;
+var ST={}, FI={};
+CR.forEach(function(c){ST[c.n+'_s']='N/A'; ST[c.n+'_o']=''; if(c.v)ST[c.n+'_v']='';});
+
+// ── SCORE ────────────────────────────────────────────────────────────────────
+function calcScore(){
+  var t=0, e=0;
+  CR.forEach(function(c){
+    var s=ST[c.n+'_s']||'N/A';
+    if(s==='AP')t+=c.p; else if(s==='PA')t+=Math.round(c.p*.5);
+    if(c.el&&s==='RP')e++;
+  });
+  var p=Math.round(t/TOTAL*100);
+  var v,sp,vc;
+  if(e>0){v='Reprovado - eliminatorio(s) reprovado(s)';sp='--';vc='#991b1b';}
+  else if(p>=85){v='Aprovacao direta';sp='DI + 4,0% a.a.';vc='#065f46';}
+  else if(p>=70){v='Aprovacao padrao';sp='DI + 5,5% a.a.';vc='#065f46';}
+  else if(p>=55){v='Comite de credito';sp='DI + 7,0% a.a.';vc='#92400e';}
+  else if(p>=40){v='Aprovacao condicional';sp='DI + 9,0% a.a.';vc='#92400e';}
+  else{v='Reprovado - score insuficiente';sp='--';vc='#991b1b';}
+  return{t:t,p:p,e:e,v:v,sp:sp,vc:vc};
+}
+
+// ── BUILD UI ─────────────────────────────────────────────────────────────────
+function buildSteps(){
+  var h='';
+  SECS.forEach(function(s,i){
+    h+='<div class="stp'+(i===cur?' on':i<cur?' ok':'')+'" onclick="goTo('+i+')"><b>'+(i+1)+'</b>'+SL[i]+'</div>';
+  });
+  document.getElementById('steps').innerHTML=h;
+}
+
+function fI(k,l,t,p){return '<div class="fg"><label>'+l+'</label><input type="'+t+'" placeholder="'+p+'" oninput="FI[\''+k+'\']=this.value"></div>';}
+function fS(k,l,opts){var o=opts.map(function(x){return '<option>'+x+'</option>';}).join('');return '<div class="fg"><label>'+l+'</label><select onchange="FI[\''+k+'\']=this.value">'+o+'</select></div>';}
+function fT(k,l){return '<div class="fg"><label>'+l+'</label><textarea oninput="FI[\''+k+'\']=this.value"></textarea></div>';}
+
+function fichaHTML(){
+  var analista = USER && USER.tipo==='analista';
+  return '<p class="stit">Identificacao do Tomador</p><p class="sdesc">Dados cadastrais, representante legal, operacao e colateral digital.</p>'+
+    '<p class="sub">Dados cadastrais</p><div class="g2">'+
+    fI('razao_social','Razao Social *','text','Ex: Cash Investments Ltda')+
+    fI('cnpj','CNPJ *','text','00.000.000/0000-00')+
+    fI('nome_fantasia','Nome fantasia','text','')+
+    fI('data_abertura','Data de abertura','date','')+
+    fI('atividade_principal','CNAE principal','text','Ex: 6499-3/99')+
+    fI('website','Website','text','')+'</div>'+
+    '<p class="sub">Representante legal</p><div class="g2">'+
+    fI('representante_nome','Nome completo *','text','')+
+    fI('representante_cpf','CPF *','text','000.000.000-00')+
+    fI('representante_cargo','Cargo','text','')+
+    fI('representante_email','E-mail','email','')+
+    fI('representante_telefone','Telefone','text','')+'</div>'+
+    '<p class="sub">Dados da operacao</p><div class="g2">'+
+    fS('modalidade','Modalidade',['DCC Full - Penhor 200% + USDC 20%','DCC Lite - 100% USDC'])+
+    fI('valor_solicitado','Valor total solicitado (R$)','number','2500000')+
+    fI('numero_tranches','Numero de tranches','number','2')+
+    fI('prazo_meses','Prazo por tranche (meses)','number','18')+'</div>'+
+    '<div class="g1" style="margin-top:12px">'+fT('finalidade','Finalidade dos recursos')+'</div>'+
+    '<p class="sub">Colateral digital (USDC)</p><div class="g2">'+
+    fI('exchange_wallet','Exchange ou wallet do USDC','text','Ex: Binance Institutional')+
+    fI('valor_usdc','Valor em USDC disponivel','number','')+
+    fI('data_extrato_usdc','Data do extrato de saldo','date','')+
+    fI('canal_aquisicao_usdc','Canal de aquisicao do USDC','text','Ex: OTC regulado / Binance')+'</div>'+
+    '<p class="sub">Analista / Originador responsavel</p><div class="g2">'+
+    fI('analista_nome','Nome do responsavel *','text', analista ? (USER.nome||'') : '')+
+    fI('analista_email','E-mail do responsavel','email', analista ? (USER.email||'') : '')+'</div>';
+}
+
+function critHTML(sid){
+  var idx=SECS.indexOf(sid);
+  var items=CR.filter(function(c){return c.s===sid;});
+  var h='<p class="stit">'+SL[idx]+'</p><p class="sdesc">Avalie cada criterio com base nas evidencias recebidas.</p>';
+  items.forEach(function(c){
+    var tb=c.tp==='EL'?'te':c.tp==='QT'?'tq':'tl';
+    var tl=c.tp==='EL'?'ELIMINATORIO':c.tp==='QT'?'QUANTITATIVO':'QUALITATIVO';
+    var cn=c.n.replace('.','_');
+    h+='<div class="card"><div class="ct"><span class="cn">'+c.n+'</span>'+
+      '<div class="cb"><div class="ctit"'+(c.el?' style="font-weight:700"':'')+'>'+c.t+
+      '<span class="tb '+tb+'">'+tl+'</span></div>'+
+      '<div class="cev">Evidencia: '+c.ev+' &middot; <strong>'+c.p+' pts</strong></div></div></div>'+
+      '<div class="cr '+(c.v?'cr3':'cr2')+'">'+
+      '<select class="ss" id="ss'+cn+'" onchange="updSt(\''+c.n+'\',this)">'+
+        '<option value="N/A">N/A - Nao avaliado</option>'+
+        '<option value="AP">Aprovado</option>'+
+        '<option value="PA">Parcial (50%)</option>'+
+        '<option value="RP">Reprovado</option>'+
+      '</select>'+
+      '<input class="oi" placeholder="Observacao / nota..." oninput="ST[\''+c.n+'_o\']=this.value">'+
+      (c.v?'<input class="oi" placeholder="'+c.vl+'" oninput="ST[\''+c.n+'_v\']=this.value">':
+           '<span class="pts" id="pts'+cn+'">-- pts</span>')+
+      '</div></div>';
+  });
+  return h;
+}
+
+function scoreHTML(){
+  return '<p class="stit">Score e Veredicto Final</p>'+
+    '<p class="sdesc">Resultado calculado automaticamente com base nos criterios avaliados.</p>'+
+    '<div class="sbx" id="sbx"></div>'+
+    '<div class="fg" style="margin-top:1rem">'+
+    '<label>Observacoes finais do analista / originador</label>'+
+    '<textarea style="min-height:100px" oninput="ST.obs=this.value" placeholder="Notas adicionais, pontos de atencao, recomendacoes..."></textarea></div>';
+}
+
+function renderScore(){
+  var s=calcScore();
+  var el=document.getElementById('sbx');
+  if(!el)return;
+  el.innerHTML=
+    '<div class="mts">'+
+    '<div class="mt"><div class="ml">Pontos obtidos</div><div class="mv" style="color:'+s.vc+'">'+s.t+'</div></div>'+
+    '<div class="mt"><div class="ml">Total possivel</div><div class="mv">'+TOTAL+'</div></div>'+
+    '<div class="mt"><div class="ml">Score</div><div class="mv" style="color:'+s.vc+'">'+s.p+'%</div></div>'+
+    '<div class="mt"><div class="ml">Eliminatorios reprov.</div><div class="mv" style="color:'+(s.e>0?'#991b1b':'#065f46')+'">'+s.e+'</div></div>'+
+    '</div>'+
+    '<div class="bw"><div class="bf" style="width:'+s.p+'%;background:'+s.vc+'"></div></div>'+
+    '<div class="vd" style="background:'+s.vc+'22;color:'+s.vc+'">'+s.v+'</div>'+
+    (s.sp!=='--'?'<div class="sprd"><span class="sval">Spread sugerido: '+s.sp+'</span></div>':'');
+}
+
+function buildSecs(){
+  var c=document.getElementById('secs');
+  c.innerHTML='';
+  SECS.forEach(function(sid,i){
+    var d=document.createElement('div');
+    d.className='sec'+(i===cur?' on':'');
+    d.id='sec'+i;
+    if(sid==='ficha')d.innerHTML=fichaHTML();
+    else if(sid==='score')d.innerHTML=scoreHTML();
+    else d.innerHTML=critHTML(sid);
+    c.appendChild(d);
+  });
+}
+
+// ── EVENTS ───────────────────────────────────────────────────────────────────
+function updSt(num, sel){
+  ST[num+'_s']=sel.value;
+  sel.className='ss'+(sel.value==='AP'?' ap':sel.value==='PA'?' pa':sel.value==='RP'?' rp':'');
+  var pe=document.getElementById('pts'+num.replace('.','_'));
+  var c=CR.find(function(x){return x.n===num;});
+  if(pe&&c){
+    var pts=sel.value==='AP'?c.p:sel.value==='PA'?Math.round(c.p*.5):0;
+    pe.textContent=(sel.value==='N/A'?'--':pts)+' pts';
+  }
+}
+
+function goTo(i){
+  cur=i;
+  document.querySelectorAll('.sec').forEach(function(el,j){el.className='sec'+(j===cur?' on':'');});
+  document.querySelectorAll('.stp').forEach(function(el,j){el.className='stp'+(j===cur?' on':j<cur?' ok':'');});
+  document.getElementById('bprev').style.visibility=cur===0?'hidden':'visible';
+  document.getElementById('bnext').textContent=cur===SECS.length-1?(rid?'Atualizar registro':'Salvar no Supabase'):'Proximo';
+  if(SECS[cur]==='score')renderScore();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function nav(d){
+  if(cur===SECS.length-1&&d===1){saveData();return;}
+  goTo(Math.max(0,Math.min(SECS.length-1,cur+d)));
+}
+
+function showToast(msg, isErr){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast on'+(isErr?' err-t':'');
+  setTimeout(function(){t.className='toast';},3500);
+}
+
+// ── SAVE ─────────────────────────────────────────────────────────────────────
+async function saveData(){
+  var sst=document.getElementById('sst');
+  sst.textContent='Salvando...'; sst.className='sst';
+
+  var s=calcScore();
+
+  // Payload mapeado exatamente contra as colunas confirmadas do banco
+  var payload = {
+    // ficha
+    razao_social:        FI.razao_social        || null,
+    nome_fantasia:       FI.nome_fantasia        || null,
+    cnpj:                FI.cnpj                 || null,
+    data_abertura:       FI.data_abertura        || null,
+    atividade_principal: FI.atividade_principal  || null,
+    website:             FI.website              || null,
+    representante_nome:  FI.representante_nome   || null,
+    representante_cpf:   FI.representante_cpf    || null,
+    representante_cargo: FI.representante_cargo  || null,
+    representante_email: FI.representante_email  || null,
+    representante_telefone: FI.representante_telefone || null,
+    modalidade:          FI.modalidade || 'DCC Full - Penhor 200% + USDC 20%',
+    finalidade:          FI.finalidade           || null,
+    exchange_wallet:     FI.exchange_wallet       || null,
+    canal_aquisicao_usdc: FI.canal_aquisicao_usdc || null,
+    // numericos
+    valor_solicitado: FI.valor_solicitado ? parseFloat(FI.valor_solicitado) : null,
+    numero_tranches:  FI.numero_tranches  ? parseInt(FI.numero_tranches)    : null,
+    prazo_meses:      FI.prazo_meses      ? parseInt(FI.prazo_meses)        : null,
+    valor_usdc:       FI.valor_usdc       ? parseFloat(FI.valor_usdc)       : null,
+    // datas
+    data_extrato_usdc: FI.data_extrato_usdc || null,
+    // analista (colunas confirmadas no schema)
+    analista_nome:  FI.analista_nome  || (USER ? USER.nome  : null),
+    analista_email: FI.analista_email || (USER ? USER.email : null),
+    analista_id:    (USER && USER.id) ? USER.id : null,
+    // score
+    score_total:             s.t,
+    score_pct:               s.p,
+    eliminatorios_reprovados: s.e,
+    veredicto:               s.v,
+    spread_sugerido:         s.sp !== '--' ? s.sp : null,
+    observacoes_finais:      ST.obs || null
+  };
+
+  // criterios — status e obs
+  Object.keys(KM).forEach(function(num){
+    var col = KM[num];
+    var raw = ST[num+'_s'] || 'N/A';
+    payload[col+'_status'] = raw==='AP'?'APROVADO': raw==='PA'?'PARCIAL': raw==='RP'?'REPROVADO': 'N/A';
+    payload[col+'_obs']    = ST[num+'_o'] || null;
+    var c = CR.find(function(x){return x.n===num;});
+    if(c && c.v) payload[col+'_valor'] = ST[num+'_v'] || null;
+  });
+
+  try{
+    var method = rid ? 'PATCH' : 'POST';
+    var url    = rid
+      ? SB+'/rest/v1/dcc_elegibilidade_tomadores?id=eq.'+rid
+      : SB+'/rest/v1/dcc_elegibilidade_tomadores';
+
+    var resp = await fetch(url, {
+      method:  method,
+      headers: H,
+      body:    JSON.stringify(rid ? payload : [payload])
+    });
+
+    var body = await resp.json();
+
+    if(resp.ok){
+      if(!rid && body[0] && body[0].id) rid = body[0].id;
+      sst.textContent = 'Salvo as '+new Date().toLocaleTimeString('pt-BR');
+      sst.className   = 'sst ok';
+      document.getElementById('bnext').textContent = 'Atualizar registro';
+      showToast('Registro salvo com sucesso!', false);
+    } else {
+      var msg = body && body.message ? body.message : JSON.stringify(body);
+      sst.textContent = 'Erro: '+msg;
+      sst.className   = 'sst err';
+      showToast('Erro ao salvar: '+msg, true);
+      console.error('Supabase error:', body);
+    }
+  }catch(ex){
+    sst.textContent = 'Erro de conexao';
+    sst.className   = 'sst err';
+    showToast('Erro de conexao com o servidor', true);
+    console.error(ex);
+  }
+}
+</script>
+</body>
+</html>
