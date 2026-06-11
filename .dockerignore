@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.DS_Store
+.next
+.git
+.env*
+vitest.config.ts
+vitest.setup.ts
+src/lib/__mocks__
+tests
+e2e
+supabase
+!.env.example

@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum OfferType {
+  RCVM_88
+  RCVM_175
+}
+
+enum OfferStatus {
+  EM_CAPTACAO
+  COMPLETA
+  ADIMPLENTE
+  INADIMPLENTE
+}
+
+enum EntityStatus {
+  ATIVO
+  INATIVO
+  EM_ANALISE
+  SUSPENSO
+  BLOQUEADO
+  OUTRO
+}
+
+enum PersonType {
+  FISICA
+  JURIDICA
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  ORIGINADOR
+  DISTRIBUIDOR
+  ASSESSOR
+  INVESTIDOR
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  role      UserRole @default(INVESTIDOR)
+  name      String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  originatorProfile Originator?
+
+  @@map("users")
+}
+
+model Originator {
+  id               String       @id @default(cuid())
+  name             String
+  cnpj             String       @unique
+  type             PersonType
+  email            String       @unique
+  phone            String
+  totalEmitted     Decimal      @default(0) @db.Decimal(15, 2)
+  activeOffers     Int          @default(0)
+  status           EntityStatus @default(ATIVO)
+  hubspotContactId String?
+  hubspotCompanyId String?
+  registrationDate DateTime     @default(now())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  offers Offer[]
+
+  @@index([cnpj])
+  @@index([status])
+  @@map("originators")
+}
+
+model Offer {
+  id           String      @id @default(cuid())
+  name         String
+  type         OfferType
+  status       OfferStatus @default(EM_CAPTACAO)
+  volume       Decimal     @db.Decimal(15, 2)
+  raised       Decimal     @default(0) @db.Decimal(15, 2)
+  progress     Int         @default(0) // 0-100
+  deadline     DateTime
+  minTicket    Decimal     @db.Decimal(15, 2)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  metadata     Json?
+
+  originatorId String
+  originator   Originator @relation(fields: [originatorId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([originatorId])
+  @@index([deadline])
+  @@map("offers")
+}
