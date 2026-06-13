@@ -8,7 +8,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
+  const redirectTo = searchParams.get("redirectTo") ?? "/deals/new";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -120,7 +120,17 @@ export default function LoginPage() {
         </Suspense>
       </div>
 
-      <p className="text-center text-xs text-gray-400 mt-6">
+      <p className="text-center text-xs text-gray-500 mt-6">
+        Ainda não tem uma conta?{" "}
+        <a
+          href="/bypass-cadastro"
+          className="text-blue-600 font-medium hover:underline"
+        >
+          Cadastre-se aqui
+        </a>
+      </p>
+
+      <p className="text-center text-xs text-gray-400 mt-3">
         Bloxs Capital © {new Date().getFullYear()} — Acesso restrito
       </p>
     </div>
