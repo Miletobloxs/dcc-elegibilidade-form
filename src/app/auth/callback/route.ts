@@ -23,11 +23,7 @@ export async function GET(request: Request) {
 
         if (!existingUser) {
           // Check if domain is allowed
-          const isAllowedDomain =
-            email.endsWith("@bloxs.com.br") ||
-            email.endsWith("@bloxs.com") ||
-            email.endsWith("@vortex.com.br") ||
-            email.endsWith("@vortex.com");
+          const isAllowedDomain = email.endsWith("@bloxs.com.br");
 
           if (isAllowedDomain) {
             // Auto-signup: create DB record

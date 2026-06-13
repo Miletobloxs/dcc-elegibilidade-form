@@ -33,6 +33,12 @@ export default async function AppLayout({
   const dbUser = await prisma.user.findUnique({
     where: { email: activeUser.email ?? "" },
   });
+
+  if (dbUser?.blocked) {
+    await supabase.auth.signOut();
+    redirect("/login?error=user_blocked");
+  }
+
   const role = dbUser?.role ?? "INVESTIDOR";
 
   const displayName =

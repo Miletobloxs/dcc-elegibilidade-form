@@ -28,14 +28,10 @@ export default function CadastroInternoPage() {
     }
 
     const emailLower = email.toLowerCase();
-    const isAllowedDomain =
-      emailLower.endsWith("@bloxs.com.br") ||
-      emailLower.endsWith("@bloxs.com") ||
-      emailLower.endsWith("@vortex.com.br") ||
-      emailLower.endsWith("@vortex.com");
+    const isAllowedDomain = emailLower.endsWith("@bloxs.com.br");
 
     if (!isAllowedDomain) {
-      setError("Apenas e-mails institucionais da Bloxs/Vortex são permitidos.");
+      setError("Apenas e-mails institucionais @bloxs.com.br são permitidos.");
       return;
     }
 

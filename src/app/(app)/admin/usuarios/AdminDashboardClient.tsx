@@ -39,6 +39,7 @@ interface User {
   role: string;
   name: string | null;
   avatar: string | null;
+  blocked: boolean;
   createdAt: Date | string;
   originatorProfile: OriginatorProfile | null;
 }
@@ -80,7 +81,7 @@ export default function AdminDashboardClient({
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
 
   // Form states
-  const [userForm, setUserForm] = useState({ name: "", role: "" });
+  const [userForm, setUserForm] = useState({ name: "", role: "", blocked: false });
   const [originatorForm, setOriginatorForm] = useState({
     name: "",
     cnpj: "",
@@ -123,6 +124,7 @@ export default function AdminDashboardClient({
     setUserForm({
       name: user.name || "",
       role: user.role,
+      blocked: user.blocked,
     });
     setError(null);
     setSuccessMessage(null);
@@ -182,14 +184,49 @@ export default function AdminDashboardClient({
           id: editingUser.id,
           name: userForm.name,
           role: userForm.role,
+          blocked: userForm.blocked,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Erro ao atualizar usuário");
 
-      setUsers(users.map((u) => (u.id === editingUser.id ? { ...u, name: userForm.name, role: userForm.role } : u)));
+      setUsers(
+        users.map((u) =>
+          u.id === editingUser.id
+            ? { ...u, name: userForm.name, role: userForm.role, blocked: userForm.blocked }
+            : u
+        )
+      );
       setSuccessMessage("Usuário atualizado com sucesso!");
       setTimeout(() => setEditingUser(null), 1000);
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || "Erro inesperado");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete User
+  const handleDeleteUser = async (id: string, displayName: string) => {
+    const confirmed = window.confirm(
+      `Tem certeza que deseja excluir permanentemente o usuário "${displayName}"? Esta ação removerá a conta do Supabase e do banco de dados local e não poderá ser desfeita.`
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/admin/users?id=${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Erro ao excluir usuário");
+
+      setUsers(users.filter((u) => u.id !== id));
+      setSuccessMessage("Usuário excluído com sucesso!");
+      setTimeout(() => setSuccessMessage(null), 3000);
       router.refresh();
     } catch (err: any) {
       setError(err.message || "Erro inesperado");
@@ -397,21 +434,28 @@ export default function AdminDashboardClient({
                         <p className="text-xs text-gray-400 mt-0.5">{u.email}</p>
                       </td>
                       <td className="py-4.5 px-6">
-                        <span
-                          className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider
-                          ${
-                            u.role === "SUPER_ADMIN"
-                              ? "bg-purple-100 text-purple-800"
-                              : u.role === "ADMIN"
-                              ? "bg-blue-100 text-blue-800"
-                              : u.role === "ORIGINADOR"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-gray-100 text-gray-700"
-                          }`}
-                        >
-                          {u.role === "SUPER_ADMIN" && <Shield size={10} />}
-                          {u.role}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider
+                            ${
+                              u.role === "SUPER_ADMIN"
+                                ? "bg-purple-100 text-purple-800"
+                                : u.role === "ADMIN"
+                                ? "bg-blue-100 text-blue-800"
+                                : u.role === "ORIGINADOR"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-gray-100 text-gray-700"
+                            }`}
+                          >
+                            {u.role === "SUPER_ADMIN" && <Shield size={10} />}
+                            {u.role}
+                          </span>
+                          {u.blocked && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-red-100 text-red-800 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+                              Bloqueado
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-4.5 px-6">
                         {op ? (
@@ -493,13 +537,24 @@ export default function AdminDashboardClient({
                       <td className="py-4.5 px-6">
                         <div className="flex gap-2">
                           {isSuperAdmin && (
-                            <button
-                              onClick={() => handleOpenUserEdit(u)}
-                              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
-                              title="Editar Perfil e Permissões"
-                            >
-                              <Edit2 size={12} /> Perfil
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleOpenUserEdit(u)}
+                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
+                                title="Editar Perfil e Permissões"
+                              >
+                                <Edit2 size={12} /> Perfil
+                              </button>
+                              {u.email !== "carlos.carneiro@bloxs.com.br" && (
+                                <button
+                                  onClick={() => handleDeleteUser(u.id, u.name || u.email)}
+                                  className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                                  title="Excluir Usuário"
+                                >
+                                  Excluir
+                                </button>
+                              )}
+                            </>
                           )}
                           {op && (
                             <button
@@ -685,6 +740,22 @@ export default function AdminDashboardClient({
                   <option value="INVESTIDOR">INVESTIDOR (Padrão)</option>
                 </select>
               </div>
+
+              {/* Bloquear Usuário (somente se não for o próprio carlos) */}
+              {editingUser.email !== "carlos.carneiro@bloxs.com.br" && (
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="blocked"
+                    checked={userForm.blocked}
+                    onChange={(e) => setUserForm({ ...userForm, blocked: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  />
+                  <label htmlFor="blocked" className="text-xs font-semibold text-gray-700 select-none cursor-pointer">
+                    Bloquear este usuário (impedir acesso à plataforma)
+                  </label>
+                </div>
+              )}
 
               {error && (
                 <div className="bg-red-50 border border-red-100 rounded-xl px-3.5 py-2 text-xs text-red-600 font-medium flex items-start gap-1.5">

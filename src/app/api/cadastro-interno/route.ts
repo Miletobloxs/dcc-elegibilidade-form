@@ -15,17 +15,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Restringe o cadastro a domínios Bloxs / Vortex
+    // Restringe o cadastro ao domínio bloxs.com.br
     const emailLower = email.toLowerCase();
-    const isAllowedDomain =
-      emailLower.endsWith("@bloxs.com.br") ||
-      emailLower.endsWith("@bloxs.com") ||
-      emailLower.endsWith("@vortex.com.br") ||
-      emailLower.endsWith("@vortex.com");
+    const isAllowedDomain = emailLower.endsWith("@bloxs.com.br");
 
     if (!isAllowedDomain) {
       return NextResponse.json(
-        { message: "Apenas e-mails institucionais da Bloxs/Vortex são permitidos." },
+        { message: "Apenas e-mails institucionais @bloxs.com.br são permitidos." },
         { status: 400 }
       );
     }
