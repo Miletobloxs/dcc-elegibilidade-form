@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 export default function CadastroInternoPage() {
@@ -16,24 +15,6 @@ export default function CadastroInternoPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Tratador do login via Google OAuth
-  async function handleGoogleLogin() {
-    setError(null);
-    const supabase = createClient();
-    
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/deals/new`,
-      },
-    });
-
-    if (error) {
-      console.error("Erro no login com Google:", error);
-      setError("Erro ao iniciar login com Google. Verifique se o provedor está ativo.");
-    }
-  }
 
   // Tratador do formulário de e-mail / senha
   async function handleSubmit(e: React.SyntheticEvent) {
@@ -136,40 +117,6 @@ export default function CadastroInternoPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Google Signup Option */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              className="w-full border border-gray-200 hover:border-gray-300 bg-white text-gray-700 font-semibold text-sm py-2.5 rounded-xl transition-all flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.927h6.6c-.29 1.5-1.14 2.77-2.4 3.61v3h3.86c2.26-2.09 3.56-5.17 3.56-8.47z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.86-3c-1.08.72-2.45 1.16-4.1 1.16-3.16 0-5.84-2.14-6.8-5.02H1.24v3.09C3.21 21.09 7.31 24 12 24z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.2 14.23c-.25-.72-.39-1.5-.39-2.3c.01-.8.14-1.58.39-2.3V6.54H1.24C.45 8.18 0 10.01 0 12c0 1.99.45 3.82 1.24 5.46L5.2 14.23z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 7.31 0 3.21 2.91 1.24 6.54l3.96 3.09c.96-2.88 3.64-5.02 6.8-5.02z"
-                />
-              </svg>
-              Cadastrar com o Google
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-100"></div>
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">ou</span>
-              <div className="flex-1 h-px bg-gray-100"></div>
-            </div>
-
             {/* Email / Password Form */}
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
