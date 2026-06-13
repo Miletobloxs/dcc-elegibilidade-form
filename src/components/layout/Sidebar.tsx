@@ -112,25 +112,6 @@ export default function Sidebar({ role }: { role?: string }) {
         ))}
       </nav>
 
-      {/* Help Box */}
-      <div className="p-4">
-        <div className="bg-blue-50 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <HelpCircle size={13} className="text-blue-600" />
-            </div>
-            <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">
-              Ajuda / Suporte
-            </span>
-          </div>
-          <p className="text-xs text-gray-500 leading-relaxed mb-3">
-            Dúvidas sobre o roadmap ou processos de sprint?
-          </p>
-          <button className="w-full bg-blue-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            Abrir Chamado
-          </button>
-        </div>
-      </div>
     </aside>
   );
 }

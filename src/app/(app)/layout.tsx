@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import prisma from "@/lib/prisma";
+import SupportWidget from "@/components/layout/SupportWidget";
 
 export default async function AppLayout({
   children,
@@ -54,6 +55,7 @@ export default async function AppLayout({
         <Header displayName={displayName} initials={initials} email={activeUser.email ?? ""} />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
+      <SupportWidget />
     </div>
   );
 }
