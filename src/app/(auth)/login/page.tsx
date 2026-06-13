@@ -56,9 +56,17 @@ function LoginForm() {
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-          Senha
-        </label>
+        <div className="flex justify-between items-center mb-1.5">
+          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
+            Senha
+          </label>
+          <a
+            href="/recuperar-senha"
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
+          >
+            Esqueceu a senha?
+          </a>
+        </div>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}

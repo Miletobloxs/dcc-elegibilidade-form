@@ -55,7 +55,9 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute =
     pathname.startsWith("/login") ||
     pathname.startsWith("/bypass-cadastro") ||
-    pathname.startsWith("/api/bypass-cadastro");
+    pathname.startsWith("/api/bypass-cadastro") ||
+    pathname.startsWith("/recuperar-senha") ||
+    pathname.startsWith("/auth/callback");
 
   if (isAuthRoute) {
     if (user || process.env.BYPASS_AUTH === "true") {
