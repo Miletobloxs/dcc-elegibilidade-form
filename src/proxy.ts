@@ -61,7 +61,7 @@ export async function proxy(request: NextRequest) {
     if (user || process.env.BYPASS_AUTH === "true") {
       // Se for o cadastro público, não redireciona para o dashboard se logado (deixa renderizar ou cadastrar)
       if (pathname.startsWith("/login")) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return NextResponse.redirect(new URL("/deals/new", request.url));
       }
     }
     return supabaseResponse;
