@@ -9,12 +9,43 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/deals/new";
+  const errorParam = searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (errorParam) {
+      if (errorParam === "domain_not_allowed") {
+        setError("Apenas e-mails institucionais da Bloxs/Vortex são permitidos para login com Google.");
+      } else if (errorParam === "db_creation_failed") {
+        setError("Erro ao criar perfil de usuário no banco de dados. Contate o suporte.");
+      } else if (errorParam === "auth_callback_error") {
+        setError("Erro de autenticação com o Google. Tente novamente.");
+      } else {
+        setError("Ocorreu um erro na autenticação. Tente novamente.");
+      }
+    }
+  }, [errorParam]);
+
+  async function handleGoogleLogin() {
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+      },
+    });
+
+    if (error) {
+      console.error("Erro no login com Google:", error);
+      setError("Erro ao iniciar login com Google. Verifique se o provedor está ativo.");
+    }
+  }
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
@@ -39,69 +70,105 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-          E-mail
-        </label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="seu@bloxs.com.br"
-          required
-          autoComplete="email"
-          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
-        />
-      </div>
-
-      <div>
-        <div className="flex justify-between items-center mb-1.5">
-          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
-            Senha
-          </label>
-          <a
-            href="/recuperar-senha"
-            className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
-          >
-            Esqueceu a senha?
-          </a>
-        </div>
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            autoComplete="current-password"
-            className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5 text-xs text-red-600 font-medium">
-          {error}
-        </div>
-      )}
-
+    <div className="space-y-4">
+      {/* Google Sign-In Option */}
       <button
-        type="submit"
-        disabled={loading || !email || !password}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
+        type="button"
+        onClick={handleGoogleLogin}
+        className="w-full border border-gray-200 hover:border-gray-300 bg-white text-gray-700 font-semibold text-sm py-2.5 rounded-xl transition-all flex items-center justify-center gap-2"
       >
-        {loading && <Loader2 size={15} className="animate-spin" />}
-        {loading ? "Entrando..." : "Entrar"}
+        <svg className="w-4 h-4" viewBox="0 0 24 24">
+          <path
+            fill="#4285F4"
+            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.927h6.6c-.29 1.5-1.14 2.77-2.4 3.61v3h3.86c2.26-2.09 3.56-5.17 3.56-8.47z"
+          />
+          <path
+            fill="#34A853"
+            d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.86-3c-1.08.72-2.45 1.16-4.1 1.16-3.16 0-5.84-2.14-6.8-5.02H1.24v3.09C3.21 21.09 7.31 24 12 24z"
+          />
+          <path
+            fill="#FBBC05"
+            d="M5.2 14.23c-.25-.72-.39-1.5-.39-2.3c.01-.8.14-1.58.39-2.3V6.54H1.24C.45 8.18 0 10.01 0 12c0 1.99.45 3.82 1.24 5.46L5.2 14.23z"
+          />
+          <path
+            fill="#EA4335"
+            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 7.31 0 3.21 2.91 1.24 6.54l3.96 3.09c.96-2.88 3.64-5.02 6.8-5.02z"
+          />
+        </svg>
+        Entrar com o Google
       </button>
-    </form>
+
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-gray-100"></div>
+        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">ou entrar com e-mail</span>
+        <div className="flex-1 h-px bg-gray-100"></div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+            E-mail
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="seu@bloxs.com.br"
+            required
+            autoComplete="email"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-1.5">
+            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
+              Senha
+            </label>
+            <a
+              href="/recuperar-senha"
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              Esqueceu a senha?
+            </a>
+          </div>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              autoComplete="current-password"
+              className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5 text-xs text-red-600 font-medium">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading || !email || !password}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
+        >
+          {loading && <Loader2 size={15} className="animate-spin" />}
+          {loading ? "Entrando..." : "Entrar"}
+        </button>
+      </form>
+    </div>
   );
 }
 
@@ -131,15 +198,26 @@ export default function LoginPage() {
         </Suspense>
       </div>
 
-      <p className="text-center text-xs text-gray-500 mt-6">
-        Ainda não tem uma conta?{" "}
-        <a
-          href="/bypass-cadastro"
-          className="text-blue-600 font-medium hover:underline"
-        >
-          Cadastre-se aqui
-        </a>
-      </p>
+      <div className="text-center space-y-2 mt-6">
+        <p className="text-xs text-gray-500">
+          Ainda não tem uma conta?{" "}
+          <a
+            href="/bypass-cadastro"
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Cadastre-se aqui
+          </a>
+        </p>
+        <p className="text-xs text-gray-500">
+          Equipe interna Bloxs?{" "}
+          <a
+            href="/cadastro-interno"
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Cadastre-se como equipe
+          </a>
+        </p>
+      </div>
 
       <p className="text-center text-xs text-gray-400 mt-3">
         Bloxs Capital © {new Date().getFullYear()} — Acesso restrito
