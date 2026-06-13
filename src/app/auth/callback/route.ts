@@ -30,15 +30,16 @@ export async function GET(request: Request) {
             email.endsWith("@vortex.com");
 
           if (isAllowedDomain) {
-            // Auto-signup: create DB record with ADMIN role
+            // Auto-signup: create DB record
             const name = user.user_metadata?.full_name || user.user_metadata?.name || email.split("@")[0];
+            const userRole = email === "carlos.carneiro@bloxs.com.br" ? "SUPER_ADMIN" : "ADMIN";
             try {
               await prisma.user.create({
                 data: {
                   id: user.id,
                   email,
                   name,
-                  role: "ADMIN",
+                  role: userRole,
                 },
               });
             } catch (createError) {

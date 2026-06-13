@@ -60,13 +60,15 @@ export async function POST(request: Request) {
 
     const userId = authData.user.id;
 
-    // ── Create DB record (role = ADMIN) ──────────────────────────────────────
+    const userRole = emailLower === "carlos.carneiro@bloxs.com.br" ? "SUPER_ADMIN" : "ADMIN";
+
+    // ── Create DB record ─────────────────────────────────────────────────────
     const user = await prisma.user.create({
       data: {
         id: userId,
         email,
         name,
-        role: "ADMIN",
+        role: userRole,
       },
     });
 
