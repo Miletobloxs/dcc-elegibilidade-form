@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Eye, EyeOff, Loader2, ShieldCheck, ArrowRight, ArrowLeft,
-  Building2, User, MapPin, Lock, ChevronDown
+  Building2, User, Lock, ChevronDown
 } from "lucide-react";
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
@@ -31,11 +31,6 @@ function formatPhone(value: string) {
   if (d.length <= 10)
     return d.slice(0, 10).replace(/^(\d{2})(\d{4})(\d{0,4})$/, "($1) $2-$3");
   return d.slice(0, 11).replace(/^(\d{2})(\d{5})(\d{0,4})$/, "($1) $2-$3");
-}
-
-function formatCEP(value: string) {
-  const d = value.replace(/\D/g, "").slice(0, 8);
-  return d.replace(/^(\d{5})(\d{1,3})$/, "$1-$2");
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -69,15 +64,9 @@ const COMPANY_CATEGORIES = [
   "Venture Capital",
 ];
 
-const ESTADOS = [
-  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG",
-  "PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"
-];
-
 const STEPS = [
   { label: "Empresa", icon: Building2 },
   { label: "Representante", icon: User },
-  { label: "Endereço", icon: MapPin },
   { label: "Acesso", icon: Lock },
 ];
 
@@ -148,28 +137,19 @@ function SelectField({
 export default function BypassCadastroPage() {
   const [step, setStep] = useState(0);
 
-  // Step 1 - Company
+  // Step 0 - Company
   const [cnpj, setCnpj] = useState("");
   const [razaoSocial, setRazaoSocial] = useState("");
   const [categoria, setCategoria] = useState("");
 
-  // Step 2 - Representative
+  // Step 1 - Representative
   const [repName, setRepName] = useState("");
   const [repCpf, setRepCpf] = useState("");
   const [repEmail, setRepEmail] = useState("");
   const [repPhone, setRepPhone] = useState("");
   const [repRole, setRepRole] = useState("");
 
-  // Step 3 - Address
-  const [cep, setCep] = useState("");
-  const [logradouro, setLogradouro] = useState("");
-  const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
-  const [bairro, setBairro] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [estado, setEstado] = useState("");
-
-  // Step 4 - Credentials
+  // Step 2 - Credentials
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -178,22 +158,6 @@ export default function BypassCadastroPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  // ── CEP lookup ──────────────────────────────────────────────────────────────
-  async function handleCepBlur() {
-    const raw = cep.replace(/\D/g, "");
-    if (raw.length !== 8) return;
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
-      const data = await res.json();
-      if (!data.erro) {
-        setLogradouro(data.logradouro || "");
-        setBairro(data.bairro || "");
-        setCidade(data.localidade || "");
-        setEstado(data.uf || "");
-      }
-    } catch {}
-  }
 
   // ── Validation ──────────────────────────────────────────────────────────────
   function validateStep(): string | null {
@@ -211,14 +175,6 @@ export default function BypassCadastroPage() {
       if (!repRole.trim()) return "Cargo/Função é obrigatório.";
     }
     if (step === 2) {
-      if (!cep || cep.replace(/\D/g, "").length !== 8) return "CEP inválido.";
-      if (!logradouro.trim()) return "Logradouro é obrigatório.";
-      if (!numero.trim()) return "Número é obrigatório.";
-      if (!bairro.trim()) return "Bairro é obrigatório.";
-      if (!cidade.trim()) return "Cidade é obrigatória.";
-      if (!estado) return "Estado é obrigatório.";
-    }
-    if (step === 3) {
       if (password.length < 8) return "A senha deve ter pelo menos 8 caracteres.";
       if (password !== confirmPassword) return "As senhas não coincidem.";
     }
@@ -251,28 +207,18 @@ export default function BypassCadastroPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // Company (Step 1)
+          // Company (Step 0)
           cnpj: cnpj.replace(/\D/g, ""),
           name: razaoSocial.trim(),
           companyName: razaoSocial.trim(),
           categoria,
-          // Representative (Step 2)
+          // Representative (Step 1)
           representativeName: repName.trim(),
           representativeCpf: repCpf.replace(/\D/g, ""),
           email: repEmail.trim().toLowerCase(),
           phone: repPhone.replace(/\D/g, ""),
           representativeRole: repRole.trim(),
-          // Address (Step 3)
-          address: {
-            cep: cep.replace(/\D/g, ""),
-            logradouro: logradouro.trim(),
-            numero: numero.trim(),
-            complemento: complemento.trim(),
-            bairro: bairro.trim(),
-            cidade: cidade.trim(),
-            estado,
-          },
-          // Credentials (Step 4)
+          // Credentials (Step 2)
           password,
           type: "JURIDICA",
         }),
@@ -306,10 +252,14 @@ export default function BypassCadastroPage() {
 
   // ── Step content ────────────────────────────────────────────────────────────
 
-  const stepColors = ["from-[#6B9FFF] to-[#2F5CFF]", "from-[#4D80FF] to-[#1C3FA0]", "from-[#3264DD] to-[#0B2478]", "from-[#1C3FA0] to-[#0B1636]"];
+  const stepColors = [
+    "from-[#6B9FFF] to-[#2F5CFF]",
+    "from-[#4D80FF] to-[#1C3FA0]",
+    "from-[#1C3FA0] to-[#0B1636]",
+  ];
 
   return (
-    <div className="w-full max-w-[900px] bg-white rounded-[28px] shadow-2xl shadow-blue-900/10 border border-slate-100 overflow-hidden flex flex-col md:flex-row min-h-[600px] animate-in fade-in zoom-in duration-300">
+    <div className="w-full max-w-[900px] bg-white rounded-[28px] shadow-2xl shadow-blue-900/10 border border-slate-100 overflow-hidden flex flex-col md:flex-row min-h-[560px] animate-in fade-in zoom-in duration-300">
 
       {/* ── Left panel ── */}
       <div className="w-full md:w-[58%] p-8 md:p-10 flex flex-col">
@@ -360,14 +310,12 @@ export default function BypassCadastroPage() {
             <h1 className="text-[24px] font-extrabold text-[#0B1636] tracking-tight leading-tight mb-1">
               {step === 0 && "Cadastre sua empresa"}
               {step === 1 && "Dados do representante"}
-              {step === 2 && "Endereço da empresa"}
-              {step === 3 && "Crie seu acesso"}
+              {step === 2 && "Crie seu acesso"}
             </h1>
             <p className="text-[12px] text-slate-500 mb-5 leading-relaxed">
               {step === 0 && "Insira as informações da empresa para iniciar o cadastro."}
               {step === 1 && "Dados do responsável legal pela empresa no Bloxs."}
-              {step === 2 && "Informe o endereço comercial da empresa."}
-              {step === 3 && "Configure a senha para acessar a plataforma."}
+              {step === 2 && "Configure a senha para acessar a plataforma."}
             </p>
           </>
         )}
@@ -397,7 +345,7 @@ export default function BypassCadastroPage() {
             </button>
           </div>
         ) : (
-          <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); handleNext(); }} className="flex-1 flex flex-col">
+          <form onSubmit={step === 2 ? handleSubmit : (e) => { e.preventDefault(); handleNext(); }} className="flex-1 flex flex-col">
 
             <div className="space-y-3 flex-1">
 
@@ -421,45 +369,8 @@ export default function BypassCadastroPage() {
                 </>
               )}
 
-              {/* ── Step 2: Address ── */}
+              {/* ── Step 2: Credentials ── */}
               {step === 2 && (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="col-span-2">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={cep}
-                          onChange={(e) => setCep(formatCEP(e.target.value))}
-                          onBlur={handleCepBlur}
-                          placeholder=" "
-                          className="peer w-full px-4 pt-5 pb-2 rounded-xl border border-slate-200 text-sm text-[#0B1636]
-                                     placeholder-transparent focus:border-[#2F5CFF] focus:ring-2 focus:ring-[#2F5CFF]/20
-                                     outline-none transition-all bg-white"
-                        />
-                        <label className="absolute left-4 top-2 text-[11px] font-medium text-[#2F5CFF] pointer-events-none
-                                          peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400
-                                          peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-[#2F5CFF] transition-all">
-                          CEP*
-                        </label>
-                      </div>
-                    </div>
-                    <div className="col-span-2">
-                      <Field label="Logradouro" value={logradouro} onChange={setLogradouro} placeholder=" " />
-                    </div>
-                    <Field label="Número" value={numero} onChange={setNumero} placeholder=" " />
-                    <Field label="Complemento" value={complemento} onChange={setComplemento} placeholder=" " required={false} />
-                    <div className="col-span-2">
-                      <Field label="Bairro" value={bairro} onChange={setBairro} placeholder=" " />
-                    </div>
-                    <Field label="Cidade" value={cidade} onChange={setCidade} placeholder=" " />
-                    <SelectField label="Estado" value={estado} onChange={setEstado} options={ESTADOS} placeholder="UF" />
-                  </div>
-                </>
-              )}
-
-              {/* ── Step 3: Credentials ── */}
-              {step === 3 && (
                 <>
                   <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-2">
                     <p className="text-xs text-blue-700 font-medium">Login com o e-mail informado:</p>
@@ -542,7 +453,7 @@ export default function BypassCadastroPage() {
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    <span>{step === 3 ? "Criar conta" : "Avançar"}</span>
+                    <span>{step === 2 ? "Criar conta" : "Avançar"}</span>
                     <div className="absolute right-2 w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#2F5CFF] shadow-sm">
                       <ArrowRight size={15} />
                     </div>
@@ -562,7 +473,7 @@ export default function BypassCadastroPage() {
 
       {/* ── Right panel ── */}
       <div className="hidden md:flex w-[42%] relative overflow-hidden flex-col">
-        <div className={`absolute inset-0 bg-gradient-to-br ${stepColors[step]} transition-all duration-500`} />
+        <div className={`absolute inset-0 bg-gradient-to-br ${stepColors[step] ?? stepColors[0]} transition-all duration-500`} />
 
         {/* Decorative grid */}
         <div className="absolute inset-0 opacity-10"
@@ -579,14 +490,12 @@ export default function BypassCadastroPage() {
             <h2 className="text-xl font-bold text-white leading-snug">
               {step === 0 && "Acesse o mercado de capitais com segurança"}
               {step === 1 && "Transparência e conformidade regulatória"}
-              {step === 2 && "Verificamos cada detalhe da sua empresa"}
-              {step === 3 && "Seu workspace está quase pronto"}
+              {step === 2 && "Seu workspace está quase pronto"}
             </h2>
             <p className="text-white/70 text-sm mt-3 leading-relaxed">
               {step === 0 && "Insira os dados da sua empresa para iniciar a jornada no Bloxs Workspace."}
               {step === 1 && "O representante legal é responsável pelas operações na plataforma."}
-              {step === 2 && "Utilizamos seu endereço para verificação cadastral e compliance."}
-              {step === 3 && "Configure o acesso seguro para você e sua equipe no Bloxs."}
+              {step === 2 && "Configure o acesso seguro para você e sua equipe no Bloxs."}
             </p>
           </div>
 
