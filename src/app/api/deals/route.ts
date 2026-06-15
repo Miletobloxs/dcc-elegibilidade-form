@@ -265,7 +265,7 @@ export async function POST(request: Request) {
             pipeline: "834144642", // 1. ORIGINAÇÃO > TRIAGEM
             amount: captacaoValor.toString(),
             description: dealDescription,
-            hs_deal_source: "BYPASS",
+            deal_origin: "BLOXS_WORKSPACE", // Bypass platform = Bloxs Workspace
           }
         };
 
