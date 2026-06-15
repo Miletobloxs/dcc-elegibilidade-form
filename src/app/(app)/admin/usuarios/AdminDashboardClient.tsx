@@ -460,6 +460,9 @@ export default function AdminDashboardClient({
                       <td className="py-4.5 px-6">
                         {op ? (
                           <div className="space-y-1 text-xs">
+                            <p className="text-gray-950 font-bold text-sm mb-1 truncate max-w-[220px]" title={op.name}>
+                              {op.name}
+                            </p>
                             <p className="text-gray-800 flex items-center gap-1.5 font-medium">
                               <Building2 size={12} className="text-gray-400" />
                               CNPJ:{" "}
@@ -512,21 +515,21 @@ export default function AdminDashboardClient({
                         {op ? (
                           <div className="space-y-1.5 text-xs">
                             {op.hubspotCompanyId ? (
-                              <span className="flex items-center gap-1 text-emerald-600 font-medium">
-                                <CheckCircle2 size={12} /> Empresa: {op.hubspotCompanyId}
+                              <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[250px]" title={`${op.name} (${op.hubspotCompanyId})`}>
+                               <CheckCircle2 size={12} className="shrink-0" /> Empresa: {op.name} ({op.hubspotCompanyId})
                               </span>
                             ) : (
                               <span className="flex items-center gap-1 text-amber-600 font-medium">
-                                <AlertTriangle size={12} /> Empresa desvinculada
+                                <AlertTriangle size={12} className="shrink-0" /> Empresa desvinculada
                               </span>
                             )}
                             {op.hubspotContactId ? (
-                              <span className="flex items-center gap-1 text-emerald-600 font-medium">
-                                <CheckCircle2 size={12} /> Contato: {op.hubspotContactId}
+                              <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[250px]" title={`${u.name || "Sem nome"} (${op.hubspotContactId})`}>
+                                <CheckCircle2 size={12} className="shrink-0" /> Contato: {u.name || "Sem nome"} ({op.hubspotContactId})
                               </span>
                             ) : (
                               <span className="flex items-center gap-1 text-amber-600 font-medium">
-                                <AlertTriangle size={12} /> Contato desvinculado
+                                <AlertTriangle size={12} className="shrink-0" /> Contato desvinculado
                               </span>
                             )}
                           </div>
@@ -721,7 +724,7 @@ export default function AdminDashboardClient({
 
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                  Nome Completo
+                  {editingUser.role === "ORIGINADOR" ? "Nome do Representante" : "Nome Completo"}
                 </label>
                 <input
                   type="text"

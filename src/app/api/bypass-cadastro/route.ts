@@ -295,8 +295,8 @@ export async function POST(request: Request) {
     // ── Create DB records ────────────────────────────────────────────────────
     const user = await prisma.user.upsert({
       where: { id: userId },
-      update: { role: "ORIGINADOR", name: companyName || name },
-      create: { id: userId, email, name: companyName || name, role: "ORIGINADOR" },
+      update: { role: "ORIGINADOR", name: representativeName || name },
+      create: { id: userId, email, name: representativeName || name, role: "ORIGINADOR" },
     });
 
     const originator = await prisma.originator.create({

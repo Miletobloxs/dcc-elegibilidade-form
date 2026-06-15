@@ -38,7 +38,49 @@ export async function PUT(request: Request) {
         role,
         blocked: blocked !== undefined ? Boolean(blocked) : undefined,
       },
+      include: { originatorProfile: true }
     });
+
+    // 1. Update Supabase Auth user metadata
+    try {
+      const supabaseAdmin = createAdminClient();
+      await supabaseAdmin.auth.admin.updateUserById(id, {
+        user_metadata: { representativeName: name }
+      });
+      console.log(`Supabase Auth updated: set representativeName = ${name} for user ${id}`);
+    } catch (authErr) {
+      console.error("Supabase Auth metadata update failed on admin save:", authErr);
+    }
+
+    // 2. Sincronizar com HubSpot se for originador e tiver hubspotContactId
+    if (updated.originatorProfile?.hubspotContactId) {
+      const token = process.env.HUBSPOT_ACCESS_TOKEN;
+      if (token) {
+        try {
+          const hsContactId = updated.originatorProfile.hubspotContactId;
+          const response = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${hsContactId}`, {
+            method: "PATCH",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              properties: {
+                firstname: name
+              }
+            })
+          });
+
+          if (!response.ok) {
+            console.error("HubSpot: Failed to update contact name on admin save:", await response.text());
+          } else {
+            console.log(`HubSpot: Contact ${hsContactId} name updated to ${name} on admin save`);
+          }
+        } catch (err) {
+          console.error("HubSpot: Sync representative name error on admin save:", err);
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, user: updated });
   } catch (error: any) {

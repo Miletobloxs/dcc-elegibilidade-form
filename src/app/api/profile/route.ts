@@ -62,6 +62,12 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: `Erro ao atualizar perfil: ${authError.message}` }, { status: 400 });
     }
 
+    // Update local User name in Prisma
+    await prisma.user.update({
+      where: { email: user.email ?? "" },
+      data: { name: representativeName.trim() }
+    });
+
     // 2. Sincronizar com HubSpot se for originador e tiver hubspotContactId
     const dbUser = await prisma.user.findUnique({
       where: { email: user.email ?? "" },
