@@ -112,6 +112,7 @@ export async function POST(request: Request) {
                 properties: {
                   name: originator.name,
                   phone: originator.phone,
+                  company_persona: "SELL_SIDE",
                 }
               })
             });
@@ -222,6 +223,30 @@ export async function POST(request: Request) {
           console.error("HubSpot: Association Originator Contact-Company failed:", err);
         }
       }
+
+      // Update Company Persona to SELL_SIDE
+      if (resolvedCompanyId) {
+        try {
+          await fetch(
+            `https://api.hubapi.com/crm/v3/objects/companies/${resolvedCompanyId}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                properties: {
+                  company_persona: "SELL_SIDE"
+                }
+              })
+            }
+          );
+          console.log(`HubSpot: Updated Company ${resolvedCompanyId} persona to SELL_SIDE`);
+        } catch (err) {
+          console.error("HubSpot: Failed to update company persona:", err);
+        }
+      }
     }
 
     // ── 2. Create Deal in HubSpot ────────────────────────────────────────────
@@ -265,7 +290,8 @@ export async function POST(request: Request) {
             pipeline: "834144642", // 1. ORIGINAÇÃO > TRIAGEM
             amount: captacaoValor.toString(),
             description: dealDescription,
-            deal_origin: "BLOXS_WORKSPACE", // Bypass platform = Bloxs Workspace
+            deal_origin: "BYPASS_FORMS", // Bypass platform = Bypass Formulário
+            company_persona: "SELL_SIDE",
           }
         };
 

@@ -71,6 +71,7 @@ async function syncToHubspot(data: {
           address: address ? `${address.logradouro}, ${address.numero}` : "",
           city: address?.cidade || "",
           state: address?.estado || "",
+          company_persona: "SELL_SIDE",
         }
       };
 

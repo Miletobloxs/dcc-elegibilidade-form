@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, HelpCircle, Search, LogOut, ChevronDown } from "lucide-react";
+import { Bell, HelpCircle, Search, LogOut, ChevronDown, Settings, Loader2, X, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type HeaderProps = {
@@ -16,6 +16,14 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
+  // Profile Modal states
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [representativeName, setRepresentativeName] = useState("");
+  const [fetchingProfile, setFetchingProfile] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSuccess, setProfileSuccess] = useState(false);
+
   async function handleSignOut() {
     setSigningOut(true);
     const supabase = createClient();
@@ -23,6 +31,64 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
     router.push("/login");
     router.refresh();
   }
+
+  async function fetchProfile() {
+    setFetchingProfile(true);
+    setProfileError(null);
+    try {
+      const res = await fetch("/api/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setRepresentativeName(data.representativeName || "");
+      } else {
+        setProfileError("Não foi possível carregar os dados do perfil.");
+      }
+    } catch (err) {
+      setProfileError("Erro de conexão ao carregar o perfil.");
+    } finally {
+      setFetchingProfile(false);
+    }
+  }
+
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    if (!representativeName.trim()) {
+      setProfileError("O nome do representante é obrigatório.");
+      return;
+    }
+
+    setSavingProfile(true);
+    setProfileError(null);
+    setProfileSuccess(false);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ representativeName })
+      });
+      if (res.ok) {
+        setProfileSuccess(true);
+        setTimeout(() => {
+          setProfileSuccess(false);
+          setShowProfileModal(false);
+        }, 1500);
+        router.refresh();
+      } else {
+        const data = await res.json();
+        setProfileError(data.message || "Erro ao salvar as alterações.");
+      }
+    } catch (err) {
+      setProfileError("Erro de conexão ao salvar as alterações.");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+  useEffect(() => {
+    if (showProfileModal) {
+      fetchProfile();
+    }
+  }, [showProfileModal]);
 
   return (
     <header className="bg-white border-b border-gray-200 h-14 flex items-center px-6 gap-4 shrink-0">
@@ -74,6 +140,18 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
                   <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
                   <p className="text-xs text-gray-500 truncate">{email}</p>
                 </div>
+                
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setShowProfileModal(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                >
+                  <Settings size={14} className="text-gray-500" />
+                  Editar Perfil
+                </button>
+
                 <button
                   onClick={handleSignOut}
                   disabled={signingOut}
@@ -87,6 +165,92 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
           )}
         </div>
       </div>
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => !savingProfile && setShowProfileModal(false)}
+          />
+          
+          {/* Card */}
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-gray-100 z-10 animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setShowProfileModal(false)}
+              disabled={savingProfile}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              Editar Perfil
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Atualize as informações do representante legal da sua conta.
+            </p>
+
+            {fetchingProfile ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-2" />
+                <p className="text-sm text-gray-500">Carregando dados...</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                    Nome do Representante
+                  </label>
+                  <input
+                    type="text"
+                    value={representativeName}
+                    onChange={(e) => setRepresentativeName(e.target.value)}
+                    placeholder="Digite o nome completo"
+                    required
+                    disabled={savingProfile || profileSuccess}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all disabled:bg-gray-50"
+                  />
+                </div>
+
+                {profileError && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-100">
+                    {profileError}
+                  </p>
+                )}
+
+                {profileSuccess && (
+                  <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2.5 rounded-xl border border-green-100">
+                    <CheckCircle2 size={16} />
+                    Alterações salvas com sucesso!
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileModal(false)}
+                    disabled={savingProfile || profileSuccess}
+                    className="px-4 py-2.5 border border-gray-200 text-sm font-semibold rounded-xl text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingProfile || profileSuccess}
+                    className="px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:bg-blue-400"
+                  >
+                    {savingProfile && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {savingProfile ? "Salvando..." : "Salvar Alterações"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
+
