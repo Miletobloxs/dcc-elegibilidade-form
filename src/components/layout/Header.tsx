@@ -24,6 +24,13 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileSuccess, setProfileSuccess] = useState(false);
 
+  // Originator states
+  const [originatorId, setOriginatorId] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState("");
+  const [cnpj, setCnpj] = useState("");
+  const [phone, setPhone] = useState("");
+  const [type, setType] = useState("");
+
   async function handleSignOut() {
     setSigningOut(true);
     const supabase = createClient();
@@ -40,6 +47,15 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
       if (res.ok) {
         const data = await res.json();
         setRepresentativeName(data.representativeName || "");
+        if (data.originator) {
+          setOriginatorId(data.originator.id);
+          setCompanyName(data.originator.name || "");
+          setCnpj(data.originator.cnpj || "");
+          setPhone(data.originator.phone || "");
+          setType(data.originator.type || "");
+        } else {
+          setOriginatorId(null);
+        }
       } else {
         setProfileError("Não foi possível carregar os dados do perfil.");
       }
@@ -66,19 +82,40 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ representativeName })
       });
-      if (res.ok) {
-        setProfileSuccess(true);
-        setTimeout(() => {
-          setProfileSuccess(false);
-          setShowProfileModal(false);
-        }, 1500);
-        router.refresh();
-      } else {
+      if (!res.ok) {
         const data = await res.json();
-        setProfileError(data.message || "Erro ao salvar as alterações.");
+        throw new Error(data.message || "Erro ao salvar as alterações do representante.");
       }
-    } catch (err) {
-      setProfileError("Erro de conexão ao salvar as alterações.");
+
+      if (originatorId) {
+        if (!companyName.trim() || !cnpj.trim() || !phone.trim()) {
+          throw new Error("Campos da empresa são obrigatórios.");
+        }
+        const resOriginator = await fetch("/api/admin/originators", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: originatorId,
+            name: companyName.trim(),
+            cnpj: cnpj.replace(/\D/g, ""),
+            phone: phone.trim(),
+            type: type,
+          })
+        });
+        if (!resOriginator.ok) {
+          const data = await resOriginator.json();
+          throw new Error(data.message || "Erro ao salvar os dados comerciais.");
+        }
+      }
+
+      setProfileSuccess(true);
+      setTimeout(() => {
+        setProfileSuccess(false);
+        setShowProfileModal(false);
+      }, 1500);
+      router.refresh();
+    } catch (err: any) {
+      setProfileError(err.message || "Erro de conexão ao salvar as alterações.");
     } finally {
       setSavingProfile(false);
     }
@@ -198,7 +235,7 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
                 <p className="text-sm text-gray-500">Carregando dados...</p>
               </div>
             ) : (
-              <form onSubmit={handleSaveProfile} className="space-y-4">
+              <form onSubmit={handleSaveProfile} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
                     Nome do Representante
@@ -213,6 +250,80 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all disabled:bg-gray-50"
                   />
                 </div>
+
+                {originatorId && (
+                  <>
+                    <div className="border-t border-gray-100 my-4 pt-4">
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                        Dados Comerciais
+                      </h4>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                        Nome Comercial / Razão Social
+                      </label>
+                      <input
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="Nome fantasia ou Razão social"
+                        required
+                        disabled={savingProfile || profileSuccess}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all disabled:bg-gray-50"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                          CNPJ
+                        </label>
+                        <input
+                          type="text"
+                          value={cnpj}
+                          onChange={(e) => setCnpj(e.target.value)}
+                          placeholder="CNPJ"
+                          required
+                          disabled={savingProfile || profileSuccess}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all disabled:bg-gray-50"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                          Telefone
+                        </label>
+                        <input
+                          type="text"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="Telefone"
+                          required
+                          disabled={savingProfile || profileSuccess}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all disabled:bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                        Tipo de Originação
+                      </label>
+                      <select
+                        value={type}
+                        onChange={(e) => setType(e.target.value)}
+                        disabled={savingProfile || profileSuccess}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all bg-white disabled:bg-gray-50"
+                      >
+                        <option value="IMOBILIARIO">Imobiliário</option>
+                        <option value="AGRO">Agro</option>
+                        <option value="CORPORATIVO">Corporativo</option>
+                        <option value="ENERGIA">Energia</option>
+                      </select>
+                    </div>
+                  </>
+                )}
 
                 {profileError && (
                   <p className="text-sm text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-100">
