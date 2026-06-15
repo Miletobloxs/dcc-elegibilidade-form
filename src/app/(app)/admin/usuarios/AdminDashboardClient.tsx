@@ -496,9 +496,14 @@ export default function AdminDashboardClient({
                       <td className="py-4.5 px-6">
                         {op ? (
                           <div className="space-y-1 text-xs">
-                            <p className="text-gray-950 font-bold text-sm mb-1 truncate max-w-[220px]" title={op.name}>
-                              {op.name}
-                            </p>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="text-gray-950 font-bold text-sm truncate max-w-[180px]" title={op.name}>
+                                {op.name}
+                              </span>
+                              {op.hubspotCompanyId && (
+                                <CopyableIdTooltip label="Empresa" id={op.hubspotCompanyId} />
+                              )}
+                            </div>
                             <p className="text-gray-800 flex items-center gap-1.5 font-medium">
                               <Building2 size={12} className="text-gray-400" />
                               CNPJ:{" "}
@@ -549,30 +554,19 @@ export default function AdminDashboardClient({
                       </td>
                       <td className="py-4.5 px-6">
                         {op ? (
-                          <div className="space-y-1.5 text-xs">
-                            {op.hubspotCompanyId ? (
-                              <div className="flex items-center gap-1.5 text-gray-800">
-                                <span className="flex items-center gap-1 text-emerald-600 font-medium min-w-0" title={op.name}>
-                                  <CheckCircle2 size={12} className="shrink-0" />
-                                  <span className="truncate max-w-[120px]">Empresa: {op.name}</span>
-                                </span>
-                                <CopyableIdTooltip label="Empresa" id={op.hubspotCompanyId} />
-                              </div>
-                            ) : (
-                              <span className="flex items-center gap-1 text-amber-600 font-medium">
-                                <AlertTriangle size={12} className="shrink-0" /> Empresa desvinculada
-                              </span>
-                            )}
+                          <div className="text-xs">
                             {op.hubspotContactId ? (
-                              <div className="flex items-center gap-1.5 text-gray-800 mt-1">
-                                <span className="flex items-center gap-1 text-emerald-600 font-medium min-w-0" title={u.name || "Sem nome"}>
-                                  <CheckCircle2 size={12} className="shrink-0" />
-                                  <span className="truncate max-w-[120px]">Contato: {u.name || "Sem nome"}</span>
+                              <div className="flex items-start gap-1.5 text-gray-800">
+                                <span className="flex items-start gap-1 text-emerald-600 font-medium min-w-0" title={u.name || "Sem nome"}>
+                                  <CheckCircle2 size={12} className="shrink-0 mt-0.5" />
+                                  <span className="break-words line-clamp-2">
+                                    Contato: {u.name || "Sem nome"}
+                                  </span>
                                 </span>
                                 <CopyableIdTooltip label="Contato" id={op.hubspotContactId} />
                               </div>
                             ) : (
-                              <span className="flex items-center gap-1 text-amber-600 font-medium mt-1">
+                              <span className="flex items-center gap-1 text-amber-600 font-medium">
                                 <AlertTriangle size={12} className="shrink-0" /> Contato desvinculado
                               </span>
                             )}
