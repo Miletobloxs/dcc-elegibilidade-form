@@ -261,9 +261,8 @@ export async function POST(request: Request) {
                 name: empresaNome,
                 city: empresaCidade,
                 state: empresaEstado,
-                industry: empresaSetor,
                 website: empresaSite || "",
-                description: `CNPJ: ${empresaCnpj}. Faturamento: ${empresaFaturamento}. Descrição: ${empresaDescricao}`,
+                description: `CNPJ: ${empresaCnpj}. Setor: ${empresaSetor}. Faturamento: ${empresaFaturamento}. Descrição: ${empresaDescricao}`,
               }
             })
           });
