@@ -581,25 +581,23 @@ export default function AdminDashboardClient({
                       </td>
                       <td className="py-4.5 px-6">
                         <div className="flex gap-2">
-                          {isSuperAdmin && (
-                            <>
-                              <button
-                                onClick={() => handleOpenUserEdit(u)}
-                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
-                                title="Editar Perfil e Permissões"
-                              >
-                                <Edit2 size={12} /> Perfil
-                              </button>
-                              {u.email !== "carlos.carneiro@bloxs.com.br" && (
-                                <button
-                                  onClick={() => handleDeleteUser(u.id, u.name || u.email)}
-                                  className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
-                                  title="Excluir Usuário"
-                                >
-                                  Excluir
-                                </button>
-                              )}
-                            </>
+                          {isAdminOrSuper && (
+                            <button
+                              onClick={() => handleOpenUserEdit(u)}
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
+                              title="Editar Perfil e Permissões"
+                            >
+                              <Edit2 size={12} /> Perfil
+                            </button>
+                          )}
+                          {isSuperAdmin && u.email !== "carlos.carneiro@bloxs.com.br" && (
+                            <button
+                              onClick={() => handleDeleteUser(u.id, u.name || u.email)}
+                              className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                              title="Excluir Usuário"
+                            >
+                              Excluir
+                            </button>
                           )}
                           {op && (
                             <button

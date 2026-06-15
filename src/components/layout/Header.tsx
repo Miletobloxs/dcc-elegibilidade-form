@@ -29,7 +29,7 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
   const [companyName, setCompanyName] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [phone, setPhone] = useState("");
-  const [type, setType] = useState("");
+  const [type, setType] = useState("JURIDICA");
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -52,7 +52,7 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
           setCompanyName(data.originator.name || "");
           setCnpj(data.originator.cnpj || "");
           setPhone(data.originator.phone || "");
-          setType(data.originator.type || "");
+          setType(data.originator.type || "JURIDICA");
         } else {
           setOriginatorId(null);
         }
@@ -308,7 +308,7 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
 
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                        Tipo de Originação
+                        Tipo de Pessoa
                       </label>
                       <select
                         value={type}
@@ -316,10 +316,8 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
                         disabled={savingProfile || profileSuccess}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all bg-white disabled:bg-gray-50"
                       >
-                        <option value="IMOBILIARIO">Imobiliário</option>
-                        <option value="AGRO">Agro</option>
-                        <option value="CORPORATIVO">Corporativo</option>
-                        <option value="ENERGIA">Energia</option>
+                        <option value="JURIDICA">Pessoa Jurídica (PJ)</option>
+                        <option value="FISICA">Pessoa Física (PF)</option>
                       </select>
                     </div>
                   </>

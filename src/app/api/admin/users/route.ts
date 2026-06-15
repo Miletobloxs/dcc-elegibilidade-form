@@ -16,9 +16,9 @@ export async function PUT(request: Request) {
       where: { email: user.email ?? "" },
     });
 
-    if (dbUser?.role !== "SUPER_ADMIN") {
+    if (dbUser?.role !== "SUPER_ADMIN" && dbUser?.role !== "ADMIN") {
       return NextResponse.json(
-        { message: "Apenas o Super Admin pode alterar permissões e perfis de usuários." },
+        { message: "Apenas Administradores e Super Admins podem alterar permissões e perfis de usuários." },
         { status: 403 }
       );
     }
