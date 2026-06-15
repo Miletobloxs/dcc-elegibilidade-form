@@ -515,20 +515,30 @@ export default function AdminDashboardClient({
                         {op ? (
                           <div className="space-y-1.5 text-xs">
                             {op.hubspotCompanyId ? (
-                              <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[250px]" title={`${op.name} (${op.hubspotCompanyId})`}>
-                               <CheckCircle2 size={12} className="shrink-0" /> Empresa: {op.name} ({op.hubspotCompanyId})
-                              </span>
+                              <div className="text-gray-800">
+                                <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[200px]" title={op.name}>
+                                  <CheckCircle2 size={12} className="shrink-0" /> Empresa: {op.name}
+                                </span>
+                                <span className="block text-[10px] text-gray-400 font-mono pl-4 mt-0.5 select-all">
+                                  ID: {op.hubspotCompanyId}
+                                </span>
+                              </div>
                             ) : (
                               <span className="flex items-center gap-1 text-amber-600 font-medium">
                                 <AlertTriangle size={12} className="shrink-0" /> Empresa desvinculada
                               </span>
                             )}
                             {op.hubspotContactId ? (
-                              <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[250px]" title={`${u.name || "Sem nome"} (${op.hubspotContactId})`}>
-                                <CheckCircle2 size={12} className="shrink-0" /> Contato: {u.name || "Sem nome"} ({op.hubspotContactId})
-                              </span>
+                              <div className="text-gray-800 mt-1.5">
+                                <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[200px]" title={u.name || "Sem nome"}>
+                                  <CheckCircle2 size={12} className="shrink-0" /> Contato: {u.name || "Sem nome"}
+                                </span>
+                                <span className="block text-[10px] text-gray-400 font-mono pl-4 mt-0.5 select-all">
+                                  ID: {op.hubspotContactId}
+                                </span>
+                              </div>
                             ) : (
-                              <span className="flex items-center gap-1 text-amber-600 font-medium">
+                              <span className="flex items-center gap-1 text-amber-600 font-medium mt-1.5">
                                 <AlertTriangle size={12} className="shrink-0" /> Contato desvinculado
                               </span>
                             )}
