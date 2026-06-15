@@ -65,6 +65,42 @@ interface Props {
   currentRole: string;
 }
 
+function CopyableIdTooltip({ label, id }: { label: string; id: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative group inline-flex items-center">
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="p-0.5 hover:bg-gray-100 rounded text-gray-400 hover:text-blue-600 transition-colors shrink-0 cursor-pointer"
+        title={`Clique para copiar o ID: ${id}`}
+      >
+        <Info size={13} className="shrink-0" />
+      </button>
+      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center z-50 pointer-events-none">
+        <span className="bg-gray-950 text-white text-[10px] py-1 px-2 rounded-md shadow-md whitespace-nowrap font-mono flex flex-col items-center gap-0.5 min-w-[120px] text-center">
+          <span className="font-sans text-[8px] text-gray-400 uppercase tracking-wider font-bold">
+            ID {label}
+          </span>
+          <span className="font-semibold text-white select-all">{id}</span>
+          <span className="font-sans text-[8px] text-blue-300 mt-0.5 font-medium">
+            {copied ? "Copiado!" : "Clique para copiar"}
+          </span>
+        </span>
+        <span className="w-1.5 h-1.5 bg-gray-950 rotate-45 -mt-1"></span>
+      </span>
+    </div>
+  );
+}
+
 export default function AdminDashboardClient({
   initialUsers,
   initialOffers,
@@ -515,13 +551,11 @@ export default function AdminDashboardClient({
                         {op ? (
                           <div className="space-y-1.5 text-xs">
                             {op.hubspotCompanyId ? (
-                              <div className="text-gray-800">
-                                <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[200px]" title={op.name}>
+                              <div className="flex items-center gap-1.5 text-gray-800">
+                                <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[150px]" title={op.name}>
                                   <CheckCircle2 size={12} className="shrink-0" /> Empresa: {op.name}
                                 </span>
-                                <span className="block text-[10px] text-gray-400 font-mono pl-4 mt-0.5 select-all">
-                                  ID: {op.hubspotCompanyId}
-                                </span>
+                                <CopyableIdTooltip label="Empresa" id={op.hubspotCompanyId} />
                               </div>
                             ) : (
                               <span className="flex items-center gap-1 text-amber-600 font-medium">
@@ -529,16 +563,14 @@ export default function AdminDashboardClient({
                               </span>
                             )}
                             {op.hubspotContactId ? (
-                              <div className="text-gray-800 mt-1.5">
-                                <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[200px]" title={u.name || "Sem nome"}>
+                              <div className="flex items-center gap-1.5 text-gray-800 mt-1">
+                                <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[150px]" title={u.name || "Sem nome"}>
                                   <CheckCircle2 size={12} className="shrink-0" /> Contato: {u.name || "Sem nome"}
                                 </span>
-                                <span className="block text-[10px] text-gray-400 font-mono pl-4 mt-0.5 select-all">
-                                  ID: {op.hubspotContactId}
-                                </span>
+                                <CopyableIdTooltip label="Contato" id={op.hubspotContactId} />
                               </div>
                             ) : (
-                              <span className="flex items-center gap-1 text-amber-600 font-medium mt-1.5">
+                              <span className="flex items-center gap-1 text-amber-600 font-medium mt-1">
                                 <AlertTriangle size={12} className="shrink-0" /> Contato desvinculado
                               </span>
                             )}
