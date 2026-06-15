@@ -73,7 +73,6 @@ export async function POST(request: Request) {
     const token = process.env.HUBSPOT_ACCESS_TOKEN;
     let resolvedCompanyId = originator.hubspotCompanyId;
     let resolvedContactId = originator.hubspotContactId;
-    let borrowerCompanyId: string | null = null;
 
     if (token) {
       // 1.1. Resolve Originator's Company
@@ -223,61 +222,6 @@ export async function POST(request: Request) {
           console.error("HubSpot: Association Originator Contact-Company failed:", err);
         }
       }
-
-      // 1.3. Resolve or Create Borrower Company (Empresa Tomadora) in HubSpot
-      try {
-        console.log(`HubSpot dynamic resolution: Searching Borrower Company with name ${empresaNome}`);
-        const borrowerSearchRes = await fetch("https://api.hubapi.com/crm/v3/objects/companies/search", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            filterGroups: [{
-              filters: [{ value: empresaNome, propertyName: "name", operator: "EQ" }]
-            }]
-          })
-        });
-
-        if (borrowerSearchRes.ok) {
-          const searchData = await borrowerSearchRes.json();
-          if (searchData.results && searchData.results.length > 0) {
-            borrowerCompanyId = searchData.results[0].id;
-            console.log(`HubSpot: Dynamically resolved existing Borrower Company ID ${borrowerCompanyId}`);
-          }
-        }
-
-        if (!borrowerCompanyId) {
-          console.log(`HubSpot: Creating Borrower Company ${empresaNome}`);
-          const createBorrowerRes = await fetch("https://api.hubapi.com/crm/v3/objects/companies", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              properties: {
-                name: empresaNome,
-                city: empresaCidade,
-                state: empresaEstado,
-                website: empresaSite || "",
-                description: `CNPJ: ${empresaCnpj}. Setor: ${empresaSetor}. Faturamento: ${empresaFaturamento}. Descrição: ${empresaDescricao}`,
-              }
-            })
-          });
-
-          if (createBorrowerRes.ok) {
-            const companyData = await createBorrowerRes.json();
-            borrowerCompanyId = companyData.id;
-            console.log(`HubSpot: Dynamically created Borrower Company ID ${borrowerCompanyId}`);
-          } else {
-            console.error("HubSpot: Dynamic Borrower Company creation failed:", await createBorrowerRes.text());
-          }
-        }
-      } catch (err) {
-        console.error("HubSpot: Error resolving Borrower Company:", err);
-      }
     }
 
     // ── 2. Create Deal in HubSpot ────────────────────────────────────────────
@@ -357,10 +301,10 @@ export async function POST(request: Request) {
             }
           }
 
-          // Associate with Company (Borrower / Tomadora)
-          if (borrowerCompanyId) {
+          // Associate with Company (Originator Company)
+          if (resolvedCompanyId) {
             const assocCompanyRes = await fetch(
-              `https://api.hubapi.com/crm/v3/objects/deals/${hubspotDealId}/associations/companies/${borrowerCompanyId}/deal_to_company`,
+              `https://api.hubapi.com/crm/v3/objects/deals/${hubspotDealId}/associations/companies/${resolvedCompanyId}/deal_to_company`,
               {
                 method: "PUT",
                 headers: {
@@ -370,7 +314,7 @@ export async function POST(request: Request) {
               }
             );
             if (assocCompanyRes.ok) {
-              console.log(`HubSpot: Associated Deal ${hubspotDealId} with Borrower Company ${borrowerCompanyId}`);
+              console.log(`HubSpot: Associated Deal ${hubspotDealId} with Originator Company ${resolvedCompanyId}`);
             } else {
               console.error("HubSpot: Failed to associate deal with company:", await assocCompanyRes.text());
             }
@@ -424,7 +368,7 @@ export async function POST(request: Request) {
           estruturaTaxa: estruturaTaxa ? Number(estruturaTaxa) : null,
           estruturaFluxo,
           hubspotDealId,
-          hubspotCompanyId: borrowerCompanyId,
+          hubspotCompanyId: resolvedCompanyId,
           hubspotContactId: resolvedContactId,
         }
       }
