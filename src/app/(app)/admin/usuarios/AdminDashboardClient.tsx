@@ -452,12 +452,12 @@ export default function AdminDashboardClient({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  <th className="py-3 px-6">Usuário / Email</th>
-                  <th className="py-3 px-6">Perfil / Função</th>
-                  <th className="py-3 px-6">Dados do Originador</th>
-                  <th className="py-3 px-6">Status</th>
-                  <th className="py-3 px-6">Sincronização HubSpot</th>
-                  <th className="py-3 px-6">Ações</th>
+                  <th className="py-3 px-6 min-w-[200px]">Usuário / Email</th>
+                  <th className="py-3 px-6 min-w-[140px]">Perfil / Função</th>
+                  <th className="py-3 px-6 min-w-[250px]">Dados do Originador</th>
+                  <th className="py-3 px-6 min-w-[120px]">Status</th>
+                  <th className="py-3 px-6 min-w-[280px]">Sincronização HubSpot</th>
+                  <th className="py-3 px-6 min-w-[240px]">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
@@ -552,8 +552,9 @@ export default function AdminDashboardClient({
                           <div className="space-y-1.5 text-xs">
                             {op.hubspotCompanyId ? (
                               <div className="flex items-center gap-1.5 text-gray-800">
-                                <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[150px]" title={op.name}>
-                                  <CheckCircle2 size={12} className="shrink-0" /> Empresa: {op.name}
+                                <span className="flex items-center gap-1 text-emerald-600 font-medium min-w-0" title={op.name}>
+                                  <CheckCircle2 size={12} className="shrink-0" />
+                                  <span className="truncate max-w-[200px]">Empresa: {op.name}</span>
                                 </span>
                                 <CopyableIdTooltip label="Empresa" id={op.hubspotCompanyId} />
                               </div>
@@ -564,8 +565,9 @@ export default function AdminDashboardClient({
                             )}
                             {op.hubspotContactId ? (
                               <div className="flex items-center gap-1.5 text-gray-800 mt-1">
-                                <span className="flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[150px]" title={u.name || "Sem nome"}>
-                                  <CheckCircle2 size={12} className="shrink-0" /> Contato: {u.name || "Sem nome"}
+                                <span className="flex items-center gap-1 text-emerald-600 font-medium min-w-0" title={u.name || "Sem nome"}>
+                                  <CheckCircle2 size={12} className="shrink-0" />
+                                  <span className="truncate max-w-[200px]">Contato: {u.name || "Sem nome"}</span>
                                 </span>
                                 <CopyableIdTooltip label="Contato" id={op.hubspotContactId} />
                               </div>
@@ -580,11 +582,11 @@ export default function AdminDashboardClient({
                         )}
                       </td>
                       <td className="py-4.5 px-6">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-1.5 items-center">
                           {isAdminOrSuper && (
                             <button
                               onClick={() => handleOpenUserEdit(u)}
-                              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
                               title="Editar Perfil e Permissões"
                             >
                               <Edit2 size={12} /> Perfil
@@ -593,7 +595,7 @@ export default function AdminDashboardClient({
                           {isSuperAdmin && u.email !== "carlos.carneiro@bloxs.com.br" && (
                             <button
                               onClick={() => handleDeleteUser(u.id, u.name || u.email)}
-                              className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                              className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors shrink-0 whitespace-nowrap"
                               title="Excluir Usuário"
                             >
                               Excluir
@@ -602,7 +604,7 @@ export default function AdminDashboardClient({
                           {op && (
                             <button
                               onClick={() => handleOpenOriginatorEdit(op)}
-                              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
+                              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
                               title="Editar Dados do Originador"
                             >
                               <Edit2 size={12} /> Originador
@@ -623,14 +625,14 @@ export default function AdminDashboardClient({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  <th className="py-3 px-6">Empresa / Deal</th>
-                  <th className="py-3 px-6">Criado em</th>
-                  <th className="py-3 px-6">Originador</th>
-                  <th className="py-3 px-6">Volume Solicitado</th>
-                  <th className="py-3 px-6">Estrutura & Taxa</th>
-                  <th className="py-3 px-6">HubSpot Deal ID</th>
-                  <th className="py-3 px-6">Detalhes do Backup</th>
-                  <th className="py-3 px-6">Ações</th>
+                  <th className="py-3 px-6 min-w-[180px]">Empresa / Deal</th>
+                  <th className="py-3 px-6 min-w-[120px]">Criado em</th>
+                  <th className="py-3 px-6 min-w-[180px]">Originador</th>
+                  <th className="py-3 px-6 min-w-[140px]">Volume Solicitado</th>
+                  <th className="py-3 px-6 min-w-[200px]">Estrutura & Taxa</th>
+                  <th className="py-3 px-6 min-w-[140px]">HubSpot Deal ID</th>
+                  <th className="py-3 px-6 min-w-[240px]">Detalhes do Backup</th>
+                  <th className="py-3 px-6 min-w-[100px]">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
