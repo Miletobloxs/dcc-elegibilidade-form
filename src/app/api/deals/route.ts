@@ -73,9 +73,10 @@ export async function POST(request: Request) {
     const token = process.env.HUBSPOT_ACCESS_TOKEN;
     let resolvedCompanyId = originator.hubspotCompanyId;
     let resolvedContactId = originator.hubspotContactId;
+    let borrowerCompanyId: string | null = null;
 
     if (token) {
-      // Resolve Company
+      // 1.1. Resolve Originator's Company
       if (!resolvedCompanyId) {
         try {
           console.log(`HubSpot dynamic resolution: Searching company with name ${originator.name}`);
@@ -96,12 +97,12 @@ export async function POST(request: Request) {
             const searchData = await companySearchRes.json();
             if (searchData.results && searchData.results.length > 0) {
               resolvedCompanyId = searchData.results[0].id;
-              console.log(`HubSpot: Dynamically resolved existing Company ID ${resolvedCompanyId}`);
+              console.log(`HubSpot: Dynamically resolved existing Originator Company ID ${resolvedCompanyId}`);
             }
           }
 
           if (!resolvedCompanyId) {
-            console.log(`HubSpot: Creating Company ${originator.name}`);
+            console.log(`HubSpot: Creating Originator Company ${originator.name}`);
             const createCompanyRes = await fetch("https://api.hubapi.com/crm/v3/objects/companies", {
               method: "POST",
               headers: {
@@ -119,17 +120,17 @@ export async function POST(request: Request) {
             if (createCompanyRes.ok) {
               const companyData = await createCompanyRes.json();
               resolvedCompanyId = companyData.id;
-              console.log(`HubSpot: Dynamically created Company ID ${resolvedCompanyId}`);
+              console.log(`HubSpot: Dynamically created Originator Company ID ${resolvedCompanyId}`);
             } else {
-              console.error("HubSpot: Dynamic Company creation failed:", await createCompanyRes.text());
+              console.error("HubSpot: Dynamic Originator Company creation failed:", await createCompanyRes.text());
             }
           }
         } catch (err) {
-          console.error("HubSpot: Error resolving Company:", err);
+          console.error("HubSpot: Error resolving Originator Company:", err);
         }
       }
 
-      // Resolve Contact
+      // 1.2. Resolve Originator's Contact
       if (!resolvedContactId) {
         try {
           console.log(`HubSpot dynamic resolution: Searching contact with email ${originator.email}`);
@@ -150,12 +151,12 @@ export async function POST(request: Request) {
             const searchData = await contactSearchRes.json();
             if (searchData.results && searchData.results.length > 0) {
               resolvedContactId = searchData.results[0].id;
-              console.log(`HubSpot: Dynamically resolved existing Contact ID ${resolvedContactId}`);
+              console.log(`HubSpot: Dynamically resolved existing Originator Contact ID ${resolvedContactId}`);
             }
           }
 
           if (!resolvedContactId) {
-            console.log(`HubSpot: Creating Contact for ${originator.email}`);
+            console.log(`HubSpot: Creating Originator Contact for ${originator.email}`);
             const representativeName = activeUser.user_metadata?.representativeName || originator.name;
             const createContactRes = await fetch("https://api.hubapi.com/crm/v3/objects/contacts", {
               method: "POST",
@@ -176,19 +177,19 @@ export async function POST(request: Request) {
             if (createContactRes.ok) {
               const contactData = await createContactRes.json();
               resolvedContactId = contactData.id;
-              console.log(`HubSpot: Dynamically created Contact ID ${resolvedContactId}`);
+              console.log(`HubSpot: Dynamically created Originator Contact ID ${resolvedContactId}`);
             } else {
               const errJson = await createContactRes.json().catch(() => ({}));
-              console.error("HubSpot: Dynamic Contact creation failed:", errJson);
+              console.error("HubSpot: Dynamic Originator Contact creation failed:", errJson);
               const match = errJson.message?.match(/Existing ID: (\d+)/);
               if (match) {
                 resolvedContactId = match[1];
-                console.log(`HubSpot: Recovered existing Contact ID ${resolvedContactId} from error`);
+                console.log(`HubSpot: Recovered existing Originator Contact ID ${resolvedContactId} from error`);
               }
             }
           }
         } catch (err) {
-          console.error("HubSpot: Error resolving Contact:", err);
+          console.error("HubSpot: Error resolving Originator Contact:", err);
         }
       }
 
@@ -204,7 +205,7 @@ export async function POST(request: Request) {
         console.log(`Local DB updated: Company ID = ${resolvedCompanyId}, Contact ID = ${resolvedContactId}`);
       }
 
-      // Link Contact ↔ Company in HubSpot if both exist
+      // Link Originator Contact ↔ Originator Company in HubSpot if both exist
       if (resolvedContactId && resolvedCompanyId) {
         try {
           await fetch(
@@ -217,10 +218,66 @@ export async function POST(request: Request) {
               }
             }
           );
-          console.log(`HubSpot: Linked Contact ${resolvedContactId} to Company ${resolvedCompanyId}`);
+          console.log(`HubSpot: Linked Originator Contact ${resolvedContactId} to Company ${resolvedCompanyId}`);
         } catch (err) {
-          console.error("HubSpot: Association Contact-Company failed:", err);
+          console.error("HubSpot: Association Originator Contact-Company failed:", err);
         }
+      }
+
+      // 1.3. Resolve or Create Borrower Company (Empresa Tomadora) in HubSpot
+      try {
+        console.log(`HubSpot dynamic resolution: Searching Borrower Company with name ${empresaNome}`);
+        const borrowerSearchRes = await fetch("https://api.hubapi.com/crm/v3/objects/companies/search", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            filterGroups: [{
+              filters: [{ value: empresaNome, propertyName: "name", operator: "EQ" }]
+            }]
+          })
+        });
+
+        if (borrowerSearchRes.ok) {
+          const searchData = await borrowerSearchRes.json();
+          if (searchData.results && searchData.results.length > 0) {
+            borrowerCompanyId = searchData.results[0].id;
+            console.log(`HubSpot: Dynamically resolved existing Borrower Company ID ${borrowerCompanyId}`);
+          }
+        }
+
+        if (!borrowerCompanyId) {
+          console.log(`HubSpot: Creating Borrower Company ${empresaNome}`);
+          const createBorrowerRes = await fetch("https://api.hubapi.com/crm/v3/objects/companies", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              properties: {
+                name: empresaNome,
+                city: empresaCidade,
+                state: empresaEstado,
+                industry: empresaSetor,
+                website: empresaSite || "",
+                description: `CNPJ: ${empresaCnpj}. Faturamento: ${empresaFaturamento}. Descrição: ${empresaDescricao}`,
+              }
+            })
+          });
+
+          if (createBorrowerRes.ok) {
+            const companyData = await createBorrowerRes.json();
+            borrowerCompanyId = companyData.id;
+            console.log(`HubSpot: Dynamically created Borrower Company ID ${borrowerCompanyId}`);
+          } else {
+            console.error("HubSpot: Dynamic Borrower Company creation failed:", await createBorrowerRes.text());
+          }
+        }
+      } catch (err) {
+        console.error("HubSpot: Error resolving Borrower Company:", err);
       }
     }
 
@@ -282,7 +339,7 @@ export async function POST(request: Request) {
           hubspotDealId = dealData.id;
           console.log(`HubSpot: Deal created with ID ${hubspotDealId}`);
 
-          // Associate with Contact (Representative)
+          // Associate with Contact (Representative / Originator)
           if (resolvedContactId) {
             const assocContactRes = await fetch(
               `https://api.hubapi.com/crm/v3/objects/deals/${hubspotDealId}/associations/contacts/${resolvedContactId}/deal_to_contact`,
@@ -301,10 +358,10 @@ export async function POST(request: Request) {
             }
           }
 
-          // Associate with Company
-          if (resolvedCompanyId) {
+          // Associate with Company (Borrower / Tomadora)
+          if (borrowerCompanyId) {
             const assocCompanyRes = await fetch(
-              `https://api.hubapi.com/crm/v3/objects/deals/${hubspotDealId}/associations/companies/${resolvedCompanyId}/deal_to_company`,
+              `https://api.hubapi.com/crm/v3/objects/deals/${hubspotDealId}/associations/companies/${borrowerCompanyId}/deal_to_company`,
               {
                 method: "PUT",
                 headers: {
@@ -314,7 +371,7 @@ export async function POST(request: Request) {
               }
             );
             if (assocCompanyRes.ok) {
-              console.log(`HubSpot: Associated Deal ${hubspotDealId} with Company ${resolvedCompanyId}`);
+              console.log(`HubSpot: Associated Deal ${hubspotDealId} with Borrower Company ${borrowerCompanyId}`);
             } else {
               console.error("HubSpot: Failed to associate deal with company:", await assocCompanyRes.text());
             }
@@ -368,6 +425,8 @@ export async function POST(request: Request) {
           estruturaTaxa: estruturaTaxa ? Number(estruturaTaxa) : null,
           estruturaFluxo,
           hubspotDealId,
+          hubspotCompanyId: borrowerCompanyId,
+          hubspotContactId: resolvedContactId,
         }
       }
     });
