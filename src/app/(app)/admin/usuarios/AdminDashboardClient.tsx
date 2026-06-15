@@ -452,12 +452,12 @@ export default function AdminDashboardClient({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  <th className="py-3 px-6 min-w-[200px]">Usuário / Email</th>
-                  <th className="py-3 px-6 min-w-[140px]">Perfil / Função</th>
-                  <th className="py-3 px-6 min-w-[250px]">Dados do Originador</th>
-                  <th className="py-3 px-6 min-w-[120px]">Status</th>
-                  <th className="py-3 px-6 min-w-[280px]">Sincronização HubSpot</th>
-                  <th className="py-3 px-6 min-w-[240px]">Ações</th>
+                  <th className="py-3 px-6 min-w-[140px]">Usuário / Email</th>
+                  <th className="py-3 px-6 min-w-[100px]">Perfil / Função</th>
+                  <th className="py-3 px-6 min-w-[180px]">Dados do Originador</th>
+                  <th className="py-3 px-6 min-w-[80px]">Status</th>
+                  <th className="py-3 px-6 min-w-[180px]">Sincronização HubSpot</th>
+                  <th className="py-3 px-6 min-w-[100px]">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
@@ -554,7 +554,7 @@ export default function AdminDashboardClient({
                               <div className="flex items-center gap-1.5 text-gray-800">
                                 <span className="flex items-center gap-1 text-emerald-600 font-medium min-w-0" title={op.name}>
                                   <CheckCircle2 size={12} className="shrink-0" />
-                                  <span className="truncate max-w-[200px]">Empresa: {op.name}</span>
+                                  <span className="truncate max-w-[120px]">Empresa: {op.name}</span>
                                 </span>
                                 <CopyableIdTooltip label="Empresa" id={op.hubspotCompanyId} />
                               </div>
@@ -567,7 +567,7 @@ export default function AdminDashboardClient({
                               <div className="flex items-center gap-1.5 text-gray-800 mt-1">
                                 <span className="flex items-center gap-1 text-emerald-600 font-medium min-w-0" title={u.name || "Sem nome"}>
                                   <CheckCircle2 size={12} className="shrink-0" />
-                                  <span className="truncate max-w-[200px]">Contato: {u.name || "Sem nome"}</span>
+                                  <span className="truncate max-w-[120px]">Contato: {u.name || "Sem nome"}</span>
                                 </span>
                                 <CopyableIdTooltip label="Contato" id={op.hubspotContactId} />
                               </div>
@@ -582,7 +582,7 @@ export default function AdminDashboardClient({
                         )}
                       </td>
                       <td className="py-4.5 px-6">
-                        <div className="flex flex-wrap gap-1.5 items-center">
+                        <div className="flex flex-col gap-1 items-start">
                           {isAdminOrSuper && (
                             <button
                               onClick={() => handleOpenUserEdit(u)}
@@ -625,14 +625,14 @@ export default function AdminDashboardClient({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  <th className="py-3 px-6 min-w-[180px]">Empresa / Deal</th>
-                  <th className="py-3 px-6 min-w-[120px]">Criado em</th>
-                  <th className="py-3 px-6 min-w-[180px]">Originador</th>
-                  <th className="py-3 px-6 min-w-[140px]">Volume Solicitado</th>
-                  <th className="py-3 px-6 min-w-[200px]">Estrutura & Taxa</th>
-                  <th className="py-3 px-6 min-w-[140px]">HubSpot Deal ID</th>
-                  <th className="py-3 px-6 min-w-[240px]">Detalhes do Backup</th>
-                  <th className="py-3 px-6 min-w-[100px]">Ações</th>
+                  <th className="py-3 px-6 min-w-[140px]">Empresa / Deal</th>
+                  <th className="py-3 px-6 min-w-[100px]">Criado em</th>
+                  <th className="py-3 px-6 min-w-[140px]">Originador</th>
+                  <th className="py-3 px-6 min-w-[110px]">Volume Solicitado</th>
+                  <th className="py-3 px-6 min-w-[160px]">Estrutura & Taxa</th>
+                  <th className="py-3 px-6 min-w-[110px]">HubSpot Deal ID</th>
+                  <th className="py-3 px-6 min-w-[180px]">Detalhes do Backup</th>
+                  <th className="py-3 px-6 min-w-[80px]">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
