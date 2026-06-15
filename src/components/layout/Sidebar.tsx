@@ -49,7 +49,7 @@ export default function Sidebar({ role }: { role?: string }) {
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
 
-  const groups = [...navGroups];
+  const groups: NavGroup[] = [];
   if (role === "SUPER_ADMIN" || role === "ADMIN") {
     groups.push({
       label: "Administração",
@@ -57,13 +57,22 @@ export default function Sidebar({ role }: { role?: string }) {
         { href: "/admin/usuarios", label: "Usuários & Cadastros", icon: Users },
       ],
     });
+  } else {
+    groups.push({
+      label: "Originação",
+      items: [
+        { href: "/deals/new", label: "Novo Deal", icon: Building2 },
+      ],
+    });
   }
+
+  const logoHref = (role === "SUPER_ADMIN" || role === "ADMIN") ? "/admin/usuarios" : "/deals/new";
 
   return (
     <aside className="w-64 min-w-64 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-gray-100">
-        <Link href="/deals/new" className="block hover:opacity-80 transition-opacity">
+        <Link href={logoHref} className="block hover:opacity-80 transition-opacity">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 112 28" className="h-7 w-auto">
             <path fill="#032952" d="M71.3564 22.8712C67.581 22.8712 66.4493 20.2289 66.4493 17.5865C66.4493 14.9442 67.5823 12.3018 71.3564 12.3018C75.1304 12.3018 76.2634 14.9442 76.2634 17.5865C76.2634 20.2289 75.1304 22.8712 71.3564 22.8712ZM71.3564 8.15009C65.3163 8.15009 61.9199 11.9254 61.9199 17.5865C61.9199 23.2476 65.3176 27.0229 71.3564 27.0229C77.3951 27.0229 80.7928 23.2476 80.7928 17.5865C80.7928 11.9254 77.3951 8.15009 71.3564 8.15009Z"></path>
             <path fill="#032952" d="M105.707 15.6982C103.857 15.1695 103.443 14.4779 103.443 13.8724C103.443 13.0558 104.198 12.3005 105.707 12.3005C106.811 12.3005 108.015 12.5727 109.123 13.2837L111.695 10.3666C109.967 8.78562 108 8.14749 105.33 8.14749C101.178 8.14749 98.9121 10.601 98.9121 13.9987C98.9121 17.5839 101.932 18.7169 104.952 19.4722C107.464 20.1 107.595 20.7146 107.595 21.3593C107.595 22.0039 106.839 22.8686 105.33 22.8686C104.022 22.8686 102.715 22.5834 101.583 21.8333L98.9629 24.8038C100.712 26.4044 103.348 27.0204 105.709 27.0204C110.238 27.0204 112.126 23.8115 112.126 21.358C112.126 17.2063 108.351 16.4509 105.709 15.6956"></path>

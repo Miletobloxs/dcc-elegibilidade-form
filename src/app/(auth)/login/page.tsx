@@ -41,6 +41,20 @@ function LoginForm() {
       return;
     }
 
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.role === "SUPER_ADMIN" || data.role === "ADMIN") {
+          router.push("/admin/usuarios");
+          router.refresh();
+          return;
+        }
+      }
+    } catch (fetchErr) {
+      console.error("Error fetching user role on login:", fetchErr);
+    }
+
     router.push(redirectTo);
     router.refresh();
   }

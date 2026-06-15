@@ -581,6 +581,7 @@ export default function AdminDashboardClient({
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   <th className="py-3 px-6">Empresa / Deal</th>
+                  <th className="py-3 px-6">Criado em</th>
                   <th className="py-3 px-6">Originador</th>
                   <th className="py-3 px-6">Volume Solicitado</th>
                   <th className="py-3 px-6">Estrutura & Taxa</th>
@@ -606,6 +607,14 @@ export default function AdminDashboardClient({
                             {meta.empresaSite}
                           </a>
                         )}
+                      </td>
+                      <td className="py-4.5 px-6 whitespace-nowrap text-xs text-gray-500" suppressHydrationWarning>
+                        <div className="font-medium text-gray-700">
+                          {new Date(offer.createdAt).toLocaleDateString("pt-BR")}
+                        </div>
+                        <div className="text-[10px] text-gray-400 mt-0.5">
+                          {new Date(offer.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        </div>
                       </td>
                       <td className="py-4.5 px-6">
                         <p className="font-semibold text-gray-800">{offer.originator.name}</p>

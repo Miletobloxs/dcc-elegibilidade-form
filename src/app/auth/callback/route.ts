@@ -17,11 +17,11 @@ export async function GET(request: Request) {
         const email = user.email.toLowerCase();
 
         // Check if user already exists in local db
-        const existingUser = await prisma.user.findUnique({
+        let dbUser = await prisma.user.findUnique({
           where: { email },
         });
 
-        if (!existingUser) {
+        if (!dbUser) {
           // Check if domain is allowed
           const isAllowedDomain = email.endsWith("@bloxs.com.br");
 
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
             const name = user.user_metadata?.full_name || user.user_metadata?.name || email.split("@")[0];
             const userRole = email === "carlos.carneiro@bloxs.com.br" ? "SUPER_ADMIN" : "ADMIN";
             try {
-              await prisma.user.create({
+              dbUser = await prisma.user.create({
                 data: {
                   id: user.id,
                   email,
@@ -47,6 +47,11 @@ export async function GET(request: Request) {
             await supabase.auth.signOut();
             return NextResponse.redirect(`${origin}/login?error=domain_not_allowed`);
           }
+        }
+
+        const role = dbUser?.role ?? "INVESTIDOR";
+        if (role === "SUPER_ADMIN" || role === "ADMIN") {
+          return NextResponse.redirect(`${origin}/admin/usuarios`);
         }
       }
       return NextResponse.redirect(`${origin}${next}`);
