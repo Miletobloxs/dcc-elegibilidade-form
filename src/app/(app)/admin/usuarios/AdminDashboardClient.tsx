@@ -16,6 +16,7 @@ import {
   X,
   Loader2,
   Info,
+  Plus,
 } from "lucide-react";
 
 interface OriginatorProfile {
@@ -117,6 +118,7 @@ export default function AdminDashboardClient({
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editingOriginator, setEditingOriginator] = useState<OriginatorProfile | null>(null);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+  const [targetUserId, setTargetUserId] = useState<string | null>(null);
 
   // Form states
   const [userForm, setUserForm] = useState({ name: "", role: "", blocked: false });
@@ -284,32 +286,48 @@ export default function AdminDashboardClient({
     setError(null);
 
     try {
+      const isNew = editingOriginator.id === "new";
       const res = await fetch("/api/admin/originators", {
-        method: "PUT",
+        method: isNew ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editingOriginator.id,
-          ...originatorForm,
-        }),
+        body: JSON.stringify(
+          isNew
+            ? { userId: targetUserId, ...originatorForm }
+            : { id: editingOriginator.id, ...originatorForm }
+        ),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Erro ao atualizar originador");
+      if (!res.ok) throw new Error(data.message || "Erro ao salvar originador");
 
-      setUsers(
-        users.map((u) => {
-          if (u.originatorProfile?.id === editingOriginator.id) {
-            return {
-              ...u,
-              originatorProfile: {
-                ...u.originatorProfile!,
-                ...originatorForm,
-              },
-            };
-          }
-          return u;
-        })
-      );
-      setSuccessMessage("Originador comercial atualizado com sucesso!");
+      if (isNew) {
+        setUsers(
+          users.map((u) => {
+            if (u.id === targetUserId) {
+              return {
+                ...u,
+                originatorProfile: data.originator,
+              };
+            }
+            return u;
+          })
+        );
+      } else {
+        setUsers(
+          users.map((u) => {
+            if (u.originatorProfile?.id === editingOriginator.id) {
+              return {
+                ...u,
+                originatorProfile: {
+                  ...u.originatorProfile!,
+                  ...originatorForm,
+                },
+              };
+            }
+            return u;
+          })
+        );
+      }
+      setSuccessMessage(isNew ? "Originador comercial criado com sucesso!" : "Originador comercial atualizado com sucesso!");
       setTimeout(() => setEditingOriginator(null), 1000);
       router.refresh();
     } catch (err: any) {
@@ -607,6 +625,27 @@ export default function AdminDashboardClient({
                               title="Editar Dados do Originador"
                             >
                               <Edit2 size={12} /> Originador
+                            </button>
+                          )}
+                          {!op && u.email === "carlos.carneiro@bloxs.com.br" && currentEmail === "carlos.carneiro@bloxs.com.br" && (
+                            <button
+                              onClick={() => {
+                                setTargetUserId(u.id);
+                                handleOpenOriginatorEdit({
+                                  id: "new",
+                                  name: "",
+                                  cnpj: "",
+                                  type: "JURIDICA",
+                                  phone: "",
+                                  status: "ATIVO",
+                                  hubspotCompanyId: "",
+                                  hubspotContactId: "",
+                                } as any);
+                              }}
+                              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
+                              title="Vincular Perfil de Originador"
+                            >
+                              <Plus size={12} /> Originador
                             </button>
                           )}
                         </div>

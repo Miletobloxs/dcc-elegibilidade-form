@@ -63,3 +63,63 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: error.message || "Erro interno" }, { status: 500 });
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ message: "Não autorizado." }, { status: 401 });
+    }
+
+    const dbUser = await prisma.user.findUnique({
+      where: { email: user.email ?? "" },
+    });
+
+    const body = await request.json();
+    const { userId, name, cnpj, type, phone, status, hubspotCompanyId, hubspotContactId } = body;
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId || "" }
+    });
+
+    if (!targetUser) {
+      return NextResponse.json({ message: "Usuário não encontrado." }, { status: 404 });
+    }
+
+    // Only allow SUPER_ADMIN or ADMIN. If target is Carlos, only Carlos can do it.
+    const isAdmin = dbUser?.role === "SUPER_ADMIN" || dbUser?.role === "ADMIN";
+    if (!isAdmin) {
+      return NextResponse.json({ message: "Acesso negado." }, { status: 403 });
+    }
+
+    if (targetUser?.email === "carlos.carneiro@bloxs.com.br" && dbUser?.email !== "carlos.carneiro@bloxs.com.br") {
+      return NextResponse.json({ message: "Acesso negado." }, { status: 403 });
+    }
+
+    if (!userId || !name || !cnpj || !phone) {
+      return NextResponse.json({ message: "Campos obrigatórios ausentes." }, { status: 400 });
+    }
+
+    // Create originator in Prisma DB
+    const newOriginator = await prisma.originator.create({
+      data: {
+        name,
+        cnpj: cnpj.replace(/\D/g, ""),
+        type,
+        phone,
+        email: targetUser.email,
+        status: status || "ATIVO",
+        userId,
+        hubspotCompanyId: hubspotCompanyId || null,
+        hubspotContactId: hubspotContactId || null,
+      }
+    });
+
+    return NextResponse.json({ success: true, originator: newOriginator });
+  } catch (error: any) {
+    console.error("Error creating originator:", error);
+    return NextResponse.json({ message: error.message || "Erro interno" }, { status: 500 });
+  }
+}
