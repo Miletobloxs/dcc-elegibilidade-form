@@ -28,9 +28,20 @@ export async function POST(request: Request) {
     }
 
     // Find the logged-in originator's details
-    const originator = await prisma.originator.findUnique({
+    const dbUser = await prisma.user.findUnique({
+      where: { id: activeUser.id },
+    });
+
+    let originator = await prisma.originator.findUnique({
       where: { userId: activeUser.id },
     });
+
+    // SUPER_ADMIN simulation mode: fall back to the first active originator
+    if (!originator && dbUser?.role === "SUPER_ADMIN") {
+      originator = await prisma.originator.findFirst({
+        where: { status: "ATIVO" },
+      });
+    }
 
     if (!originator) {
       return NextResponse.json(

@@ -51,11 +51,15 @@ export default function Sidebar({ role }: { role?: string }) {
 
   const groups: NavGroup[] = [];
   if (role === "SUPER_ADMIN" || role === "ADMIN") {
+    const adminItems: NavItem[] = [
+      { href: "/admin/usuarios", label: "Usuários & Cadastros", icon: Users },
+    ];
+    if (role === "SUPER_ADMIN") {
+      adminItems.push({ href: "/deals/new", label: "Simular Deal", icon: Building2 });
+    }
     groups.push({
       label: "Administração",
-      items: [
-        { href: "/admin/usuarios", label: "Usuários & Cadastros", icon: Users },
-      ],
+      items: adminItems,
     });
   } else {
     groups.push({

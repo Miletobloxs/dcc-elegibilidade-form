@@ -30,7 +30,7 @@ export default async function NewDealPage() {
 
   const role = dbUser?.role ?? "INVESTIDOR";
 
-  if (role === "SUPER_ADMIN" || role === "ADMIN") {
+  if (role === "ADMIN") {
     redirect("/admin/usuarios");
   }
 
