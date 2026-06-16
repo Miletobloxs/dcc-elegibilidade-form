@@ -63,6 +63,7 @@ interface Props {
   initialUsers: User[];
   initialOffers: Offer[];
   currentRole: string;
+  currentEmail: string;
 }
 
 function CopyableIdTooltip({ label, id }: { label: string; id: string }) {
@@ -105,6 +106,7 @@ export default function AdminDashboardClient({
   initialUsers,
   initialOffers,
   currentRole,
+  currentEmail,
 }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<"usuarios" | "deals">("usuarios");
@@ -156,6 +158,7 @@ export default function AdminDashboardClient({
   // Open User Edit Modal
   const handleOpenUserEdit = (user: User) => {
     if (!isSuperAdmin) return;
+    if (user.email === "carlos.carneiro@bloxs.com.br" && currentEmail !== "carlos.carneiro@bloxs.com.br") return;
     setEditingUser(user);
     setUserForm({
       name: user.name || "",
@@ -168,6 +171,8 @@ export default function AdminDashboardClient({
 
   // Open Originator Edit Modal
   const handleOpenOriginatorEdit = (op: OriginatorProfile) => {
+    const targetUser = users.find((u) => u.originatorProfile?.id === op.id);
+    if (targetUser?.email === "carlos.carneiro@bloxs.com.br" && currentEmail !== "carlos.carneiro@bloxs.com.br") return;
     setEditingOriginator(op);
     setOriginatorForm({
       name: op.name,
@@ -577,7 +582,7 @@ export default function AdminDashboardClient({
                       </td>
                       <td className="py-4.5 px-6">
                         <div className="flex flex-col gap-1 items-start">
-                          {isAdminOrSuper && (
+                          {isAdminOrSuper && (u.email !== "carlos.carneiro@bloxs.com.br" || currentEmail === "carlos.carneiro@bloxs.com.br") && (
                             <button
                               onClick={() => handleOpenUserEdit(u)}
                               className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
@@ -595,7 +600,7 @@ export default function AdminDashboardClient({
                               Excluir
                             </button>
                           )}
-                          {op && (
+                          {op && (u.email !== "carlos.carneiro@bloxs.com.br" || currentEmail === "carlos.carneiro@bloxs.com.br") && (
                             <button
                               onClick={() => handleOpenOriginatorEdit(op)}
                               className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"

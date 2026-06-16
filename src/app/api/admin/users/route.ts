@@ -30,6 +30,17 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: "Campos obrigatórios ausentes." }, { status: 400 });
     }
 
+    const targetUser = await prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (targetUser?.email === "carlos.carneiro@bloxs.com.br" && dbUser.email !== "carlos.carneiro@bloxs.com.br") {
+      return NextResponse.json(
+        { message: "Apenas o próprio Super Admin pode editar seus dados de perfil." },
+        { status: 403 }
+      );
+    }
+
     // Update user name, role, and blocked status in Prisma
     const updated = await prisma.user.update({
       where: { id },

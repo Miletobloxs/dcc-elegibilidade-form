@@ -26,6 +26,15 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: "Acesso negado." }, { status: 403 });
     }
 
+    const targetOriginator = await prisma.originator.findUnique({
+      where: { id },
+      include: { user: true }
+    });
+
+    if (targetOriginator?.user?.email === "carlos.carneiro@bloxs.com.br" && dbUser?.email !== "carlos.carneiro@bloxs.com.br") {
+      return NextResponse.json({ message: "Acesso negado." }, { status: 403 });
+    }
+
     if (!id || !name || !cnpj || !phone) {
       return NextResponse.json({ message: "Campos obrigatórios ausentes." }, { status: 400 });
     }

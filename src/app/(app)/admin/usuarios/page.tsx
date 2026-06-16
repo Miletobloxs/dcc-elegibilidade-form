@@ -80,6 +80,7 @@ export default async function AdminUsuariosPage() {
       initialUsers={formattedUsers as any}
       initialOffers={formattedOffers as any}
       currentRole={dbUser.role}
+      currentEmail={activeUser.email ?? ""}
     />
   );
 }
