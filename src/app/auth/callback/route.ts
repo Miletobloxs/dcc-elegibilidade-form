@@ -50,7 +50,7 @@ export async function GET(request: Request) {
         }
 
         const role = dbUser?.role ?? "INVESTIDOR";
-        if (role === "SUPER_ADMIN" || role === "ADMIN") {
+        if ((role === "SUPER_ADMIN" || role === "ADMIN") && !next.startsWith("/recuperar-senha")) {
           return NextResponse.redirect(`${origin}/admin/usuarios`);
         }
       }
