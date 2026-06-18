@@ -27,29 +27,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Não autorizado." }, { status: 401 });
     }
 
-    // Find the logged-in originator's details
     const dbUser = await prisma.user.findUnique({
       where: { id: activeUser.id },
     });
 
-    let originator = await prisma.originator.findUnique({
-      where: { userId: activeUser.id },
-    });
-
-    // SUPER_ADMIN simulation mode: fall back to the first active originator
-    if (!originator && dbUser?.role === "SUPER_ADMIN") {
-      originator = await prisma.originator.findFirst({
-        where: { status: "ATIVO" },
-      });
-    }
-
-    if (!originator) {
-      return NextResponse.json(
-        { message: "Perfil de originador não encontrado." },
-        { status: 404 }
-      );
-    }    const body = await request.json();
+    const body = await request.json();
     const {
+      originatorId,
       // Step 1
       empresaNome,
       empresaCnpj,
@@ -72,6 +56,37 @@ export async function POST(request: Request) {
       estruturaTaxa,
       estruturaFluxo,
     } = body;
+
+    // Resolve the originator the deal will be attributed to.
+    // ADMIN / SUPER_ADMIN create the deal on behalf of a selected originator;
+    // regular originators use their own profile.
+    const isAdminActor = dbUser?.role === "ADMIN" || dbUser?.role === "SUPER_ADMIN";
+    let originator;
+    if (isAdminActor) {
+      if (!originatorId) {
+        return NextResponse.json(
+          { message: "Selecione o originador em nome de quem o deal será cadastrado." },
+          { status: 400 }
+        );
+      }
+      originator = await prisma.originator.findUnique({ where: { id: originatorId } });
+      if (!originator) {
+        return NextResponse.json(
+          { message: "Originador selecionado não encontrado." },
+          { status: 404 }
+        );
+      }
+    } else {
+      originator = await prisma.originator.findUnique({
+        where: { userId: activeUser.id },
+      });
+      if (!originator) {
+        return NextResponse.json(
+          { message: "Perfil de originador não encontrado." },
+          { status: 404 }
+        );
+      }
+    }
 
     if (!empresaNome || !empresaCnpj || !empresaCidade || !empresaEstado || !empresaSetor || !empresaDescricao || !empresaFaturamento || !captacaoValor || !captacaoFinalidade) {
       return NextResponse.json(

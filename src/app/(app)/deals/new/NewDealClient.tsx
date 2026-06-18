@@ -71,8 +71,19 @@ const FLUXOS_PAGAMENTO = [
   "Outro"
 ];
 
-export default function NewDealClient() {
+type OriginatorOption = { id: string; name: string; cnpj: string; status: string };
+
+export default function NewDealClient({
+  canChooseOriginator = false,
+  originators = [],
+}: {
+  canChooseOriginator?: boolean;
+  originators?: OriginatorOption[];
+}) {
   const [step, setStep] = useState(0);
+
+  // Admin/Super Admin: originador em nome de quem o deal será cadastrado
+  const [selectedOriginatorId, setSelectedOriginatorId] = useState("");
 
   // --- Step 1: Sobre a empresa tomadora ---
   const [empresaNome, setEmpresaNome] = useState("");
@@ -121,6 +132,7 @@ export default function NewDealClient() {
   // Validation
   function validateStep(): string | null {
     if (step === 0) {
+      if (canChooseOriginator && !selectedOriginatorId) return "Selecione o originador em nome de quem o deal será cadastrado.";
       if (!empresaNome.trim()) return "Nome da empresa tomadora é obrigatório.";
       if (!empresaCnpj || empresaCnpj.replace(/\D/g, "").length !== 14) return "CNPJ da empresa tomadora inválido.";
       if (!empresaCidade.trim()) return "Cidade é obrigatória.";
@@ -163,6 +175,8 @@ export default function NewDealClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          // Admin: originador selecionado (em nome de quem)
+          originatorId: canChooseOriginator ? selectedOriginatorId : undefined,
           // Step 1
           empresaNome: empresaNome.trim(),
           empresaCnpj: empresaCnpj.replace(/\D/g, ""),
@@ -195,6 +209,7 @@ export default function NewDealClient() {
       
       // Reset Form State
       setStep(0);
+      setSelectedOriginatorId("");
       setEmpresaNome("");
       setEmpresaCnpj("");
       setEmpresaCidade("");
@@ -275,6 +290,32 @@ export default function NewDealClient() {
                     <h2 className="text-base font-bold text-gray-800">Sobre a empresa tomadora</h2>
                     <p className="text-xs text-gray-400 mt-0.5">Preencha abaixo os campos com informações sobre a empresa tomadora.</p>
                   </div>
+
+                  {canChooseOriginator && (
+                    <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-4">
+                      <label className="block text-xs font-bold text-blue-900 uppercase tracking-wide mb-1.5">
+                        Originador (em nome de quem) *
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={selectedOriginatorId}
+                          onChange={(e) => setSelectedOriginatorId(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-base sm:text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
+                        >
+                          <option value="">Selecione o originador</option>
+                          {originators.map((o) => (
+                            <option key={o.id} value={o.id}>
+                              {o.name} — {o.cnpj}{o.status !== "ATIVO" ? ` (${o.status})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
+                      <p className="text-[11px] text-blue-700/70 mt-1.5">
+                        Você está cadastrando este deal em nome do originador selecionado.
+                      </p>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>

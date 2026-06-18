@@ -29,10 +29,15 @@ export default async function NewDealPage() {
   });
 
   const role = dbUser?.role ?? "INVESTIDOR";
+  const canChooseOriginator = role === "ADMIN" || role === "SUPER_ADMIN";
 
-  if (role === "ADMIN") {
-    redirect("/admin/usuarios");
+  let originators: { id: string; name: string; cnpj: string; status: string }[] = [];
+  if (canChooseOriginator) {
+    originators = await prisma.originator.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, cnpj: true, status: true },
+    });
   }
 
-  return <NewDealClient />;
+  return <NewDealClient canChooseOriginator={canChooseOriginator} originators={originators} />;
 }
