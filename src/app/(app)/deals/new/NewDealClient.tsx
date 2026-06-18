@@ -221,7 +221,7 @@ export default function NewDealClient() {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto animate-in fade-in duration-300">
       
       {/* Header with Title and Progress */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -245,7 +245,7 @@ export default function NewDealClient() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col lg:flex-row">
         
         {/* Form area */}
-        <div className="flex-1 p-8 md:p-10">
+        <div className="flex-1 p-5 sm:p-8 lg:p-10">
           
           {success && (
             <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 mb-8 flex gap-4 text-emerald-800 animate-in slide-in-from-top-4 duration-300">
@@ -284,7 +284,7 @@ export default function NewDealClient() {
                         value={empresaNome} 
                         onChange={(e) => setEmpresaNome(e.target.value)}
                         placeholder="Nome empresarial / Fantasia"
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                       />
                     </div>
                     <div>
@@ -294,29 +294,29 @@ export default function NewDealClient() {
                         value={empresaCnpj} 
                         onChange={(e) => handleCnpjChange(e.target.value)}
                         placeholder="00.000.000/0000-00"
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-10 gap-5">
-                    <div className="md:col-span-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+                    <div className="sm:col-span-2">
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Em qual cidade ela está localizada? *</label>
                       <input 
                         type="text" 
                         value={empresaCidade} 
                         onChange={(e) => setEmpresaCidade(e.target.value)}
                         placeholder="Ex: São Paulo"
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                       />
                     </div>
-                    <div className="md:col-span-3">
+                    <div className="sm:col-span-1">
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Estado *</label>
                       <div className="relative">
                         <select 
                           value={empresaEstado} 
                           onChange={(e) => setEmpresaEstado(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
+                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
                         >
                           <option value="">Selecione o estado</option>
                           {ESTADOS.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
@@ -324,13 +324,13 @@ export default function NewDealClient() {
                         <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                       </div>
                     </div>
-                    <div className="md:col-span-3">
+                    <div className="sm:col-span-1">
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Setor *</label>
                       <div className="relative">
                         <select 
                           value={empresaSetor} 
                           onChange={(e) => setEmpresaSetor(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
+                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
                         >
                           <option value="">Selecione o setor</option>
                           {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -347,7 +347,7 @@ export default function NewDealClient() {
                       value={empresaSite} 
                       onChange={(e) => setEmpresaSite(e.target.value)}
                       placeholder="Ex: www.suaempresa.com.br"
-                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                     />
                   </div>
 
@@ -358,7 +358,7 @@ export default function NewDealClient() {
                       onChange={(e) => setEmpresaDescricao(e.target.value)}
                       placeholder="Escreva brevemente sobre a atividade econômica, produtos ou serviços..."
                       rows={3}
-                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all resize-none text-gray-900"
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all resize-none text-gray-900"
                     />
                   </div>
 
@@ -369,7 +369,7 @@ export default function NewDealClient() {
                       value={empresaFaturamento} 
                       onChange={(e) => setEmpresaFaturamento(e.target.value)}
                       placeholder="Ex: R$ 15.000.000"
-                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                     />
                   </div>
                 </div>
@@ -390,7 +390,7 @@ export default function NewDealClient() {
                       value={captacaoValor} 
                       onChange={(e) => setCaptacaoValor(e.target.value)}
                       placeholder="Ex: 5000000"
-                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                     />
                   </div>
 
@@ -400,7 +400,7 @@ export default function NewDealClient() {
                       <select 
                         value={captacaoFinalidade} 
                         onChange={(e) => setCaptacaoFinalidade(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
                       >
                         <option value="">Selecione as finalidades</option>
                         {FINALIDADES.map((f) => <option key={f} value={f}>{f}</option>)}
@@ -416,7 +416,7 @@ export default function NewDealClient() {
                         <select 
                           value={captacaoGarantia} 
                           onChange={(e) => setCaptacaoGarantia(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
+                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
                         >
                           <option value="">Selecione as garantias</option>
                           {GARANTIAS.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -431,7 +431,7 @@ export default function NewDealClient() {
                         value={captacaoGarantiaValor} 
                         onChange={(e) => setCaptacaoGarantiaValor(e.target.value)}
                         placeholder="Ex: 8000000"
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                       />
                     </div>
                   </div>
@@ -443,7 +443,7 @@ export default function NewDealClient() {
                       value={captacaoPrazo} 
                       onChange={(e) => setCaptacaoPrazo(e.target.value)}
                       placeholder="Ex: 36"
-                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                     />
                   </div>
 
@@ -454,7 +454,7 @@ export default function NewDealClient() {
                       onChange={(e) => setCaptacaoRiscos(e.target.value)}
                       placeholder="Indique riscos setoriais, sazonalidade, concentração de clientes ou outros pontos relevantes..."
                       rows={3}
-                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all resize-none text-gray-900"
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all resize-none text-gray-900"
                     />
                   </div>
                 </div>
@@ -474,7 +474,7 @@ export default function NewDealClient() {
                       <select 
                         value={estruturaInstrumento} 
                         onChange={(e) => setEstruturaInstrumento(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
                       >
                         <option value="">Selecione o instrumento</option>
                         {INSTRUMENTOS.map((i) => <option key={i} value={i}>{i}</option>)}
@@ -490,7 +490,7 @@ export default function NewDealClient() {
                         <select 
                           value={estruturaIndexador} 
                           onChange={(e) => setEstruturaIndexador(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
+                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
                         >
                           <option value="">Selecione o indexador</option>
                           {INDEXADORES.map((idx) => <option key={idx} value={idx}>{idx}</option>)}
@@ -506,7 +506,7 @@ export default function NewDealClient() {
                         value={estruturaTaxa} 
                         onChange={(e) => setEstruturaTaxa(e.target.value)}
                         placeholder="Ex: 15.5"
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
                       />
                     </div>
                   </div>
@@ -517,7 +517,7 @@ export default function NewDealClient() {
                       <select 
                         value={estruturaFluxo} 
                         onChange={(e) => setEstruturaFluxo(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
                       >
                         <option value="">Selecione o fluxo de pagamento</option>
                         {FLUXOS_PAGAMENTO.map((fluxo) => <option key={fluxo} value={fluxo}>{fluxo}</option>)}
@@ -536,7 +536,7 @@ export default function NewDealClient() {
                     <p className="text-xs text-gray-400 mt-0.5">Revise as informações da oportunidade de originação antes de submeter.</p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {/* Panel 1 */}
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                       <div className="flex items-center gap-2 mb-3 text-blue-700">
@@ -713,7 +713,7 @@ export default function NewDealClient() {
         </div>
 
         {/* Info panel */}
-        <div className="w-full lg:w-[30%] bg-gradient-to-br from-blue-900 to-[#0B1636] p-8 md:p-10 flex flex-col justify-between text-white lg:rounded-r-2xl">
+        <div className="w-full lg:w-[30%] bg-gradient-to-br from-blue-900 to-[#0B1636] p-6 sm:p-8 lg:p-10 flex flex-col justify-between text-white lg:rounded-r-2xl">
           <div>
             <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-6">
               <Building2 size={20} />
