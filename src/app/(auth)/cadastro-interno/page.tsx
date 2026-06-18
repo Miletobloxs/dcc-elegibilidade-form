@@ -71,7 +71,7 @@ export default function CadastroInternoPage() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="bg-white rounded-2xl shadow-xl shadow-blue-100/50 border border-gray-100 p-8">
+      <div className="bg-white rounded-2xl shadow-xl shadow-blue-100/50 border border-gray-100 p-6 sm:p-8">
         {/* Logo & Header */}
         <div className="flex flex-col items-center mb-6">
           <div className="mb-4">
@@ -126,7 +126,7 @@ export default function CadastroInternoPage() {
                   placeholder="Seu Nome"
                   required
                   autoComplete="name"
-                  className="w-full px-3.5 py-2.2 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="w-full px-3.5 py-2.2 rounded-xl border border-gray-200 text-base sm:text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                 />
               </div>
 
@@ -141,7 +141,7 @@ export default function CadastroInternoPage() {
                   placeholder="seu@bloxs.com.br"
                   required
                   autoComplete="email"
-                  className="w-full px-3.5 py-2.2 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="w-full px-3.5 py-2.2 rounded-xl border border-gray-200 text-base sm:text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                 />
               </div>
 
@@ -157,7 +157,7 @@ export default function CadastroInternoPage() {
                     placeholder="••••••••"
                     required
                     autoComplete="new-password"
-                    className="w-full px-3.5 py-2.2 pr-10 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full px-3.5 py-2.2 pr-10 rounded-xl border border-gray-200 text-base sm:text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                   />
                   <button
                     type="button"
@@ -181,7 +181,7 @@ export default function CadastroInternoPage() {
                     placeholder="••••••••"
                     required
                     autoComplete="new-password"
-                    className="w-full px-3.5 py-2.2 pr-10 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full px-3.5 py-2.2 pr-10 rounded-xl border border-gray-200 text-base sm:text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                   />
                   <button
                     type="button"

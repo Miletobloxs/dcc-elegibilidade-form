@@ -88,7 +88,7 @@ function Field({
         placeholder={placeholder || " "}
         required={required}
         autoComplete={autoComplete}
-        className="peer w-full px-4 pt-5 pb-2 rounded-xl border border-slate-200 text-sm text-[#0B1636]
+        className="peer w-full px-4 pt-5 pb-2 rounded-xl border border-slate-200 text-base sm:text-sm text-[#0B1636]
                    placeholder-transparent focus:border-[#2F5CFF] focus:ring-2 focus:ring-[#2F5CFF]/20
                    outline-none transition-all bg-white"
       />
@@ -116,7 +116,7 @@ function SelectField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required
-        className="peer w-full px-4 pt-5 pb-2 rounded-xl border border-slate-200 text-sm text-[#0B1636]
+        className="peer w-full px-4 pt-5 pb-2 rounded-xl border border-slate-200 text-base sm:text-sm text-[#0B1636]
                    focus:border-[#2F5CFF] focus:ring-2 focus:ring-[#2F5CFF]/20 outline-none
                    transition-all bg-white appearance-none cursor-pointer"
       >
@@ -262,7 +262,7 @@ export default function BypassCadastroPage() {
     <div className="w-full max-w-[900px] bg-white rounded-[28px] shadow-2xl shadow-blue-900/10 border border-slate-100 overflow-hidden flex flex-col md:flex-row min-h-[560px] animate-in fade-in zoom-in duration-300">
 
       {/* ── Left panel ── */}
-      <div className="w-full md:w-[58%] p-8 md:p-10 flex flex-col">
+      <div className="w-full md:w-[58%] p-6 sm:p-8 lg:p-10 flex flex-col">
 
         <div className="mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 112 28" className="h-7 w-auto">
@@ -384,7 +384,7 @@ export default function BypassCadastroPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder=" "
                       autoComplete="new-password"
-                      className="peer w-full px-4 pt-5 pb-2 pr-11 rounded-xl border border-slate-200 text-sm text-[#0B1636]
+                      className="peer w-full px-4 pt-5 pb-2 pr-11 rounded-xl border border-slate-200 text-base sm:text-sm text-[#0B1636]
                                  placeholder-transparent focus:border-[#2F5CFF] focus:ring-2 focus:ring-[#2F5CFF]/20
                                  outline-none transition-all bg-white"
                     />
@@ -405,7 +405,7 @@ export default function BypassCadastroPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder=" "
                       autoComplete="new-password"
-                      className="peer w-full px-4 pt-5 pb-2 pr-11 rounded-xl border border-slate-200 text-sm text-[#0B1636]
+                      className="peer w-full px-4 pt-5 pb-2 pr-11 rounded-xl border border-slate-200 text-base sm:text-sm text-[#0B1636]
                                  placeholder-transparent focus:border-[#2F5CFF] focus:ring-2 focus:ring-[#2F5CFF]/20
                                  outline-none transition-all bg-white"
                     />
@@ -437,7 +437,7 @@ export default function BypassCadastroPage() {
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="flex items-center gap-1.5 px-4 py-3 rounded-full border border-slate-200 text-sm text-slate-600 font-medium
+                  className="flex items-center gap-1.5 px-4 py-3 rounded-full border border-slate-200 text-base sm:text-sm text-slate-600 font-medium
                              hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer"
                 >
                   <ArrowLeft size={14} /> Voltar

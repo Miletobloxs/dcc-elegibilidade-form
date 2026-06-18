@@ -21,10 +21,10 @@ export default function SupportWidget() {
   }, []);
 
   return (
-    <div ref={widgetRef} className="fixed bottom-6 right-6 z-50">
+    <div ref={widgetRef} className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50">
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="absolute bottom-16 right-0 w-80 max-w-[calc(100vw-2.5rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="flex justify-between items-start mb-3">
             <div>
               <h3 className="font-bold text-gray-900 text-sm">Central de Ajuda</h3>
