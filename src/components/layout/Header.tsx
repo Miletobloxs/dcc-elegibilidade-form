@@ -15,6 +15,7 @@ type HeaderProps = {
 export default function Header({ displayName, initials, email, onMenuClick }: HeaderProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   // Profile Modal states
@@ -129,7 +130,7 @@ export default function Header({ displayName, initials, email, onMenuClick }: He
   }, [showProfileModal]);
 
   return (
-    <header className="bg-white border-b border-gray-200 h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 shrink-0">
+    <header className="relative bg-white border-b border-gray-200 h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 shrink-0">
       {/* Hamburger (mobile only) */}
       <button
         onClick={onMenuClick}
@@ -139,7 +140,7 @@ export default function Header({ displayName, initials, email, onMenuClick }: He
         <Menu size={20} />
       </button>
 
-      {/* Search (hidden on mobile — busca mobile completa na Etapa 2) */}
+      {/* Search inline (md+) */}
       <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-xl px-3.5 py-2 w-72 mr-auto">
         <Search size={14} className="text-gray-400 shrink-0" />
         <input
@@ -149,11 +150,39 @@ export default function Header({ displayName, initials, email, onMenuClick }: He
         />
       </div>
 
-      {/* Spacer when search is hidden, to keep action icons right-aligned */}
+      {/* Spacer when inline search is hidden, to keep action icons right-aligned */}
       <div className="flex-1 md:hidden" />
+
+      {/* Search overlay (mobile only) */}
+      {searchOpen && (
+        <div className="absolute inset-0 z-30 flex items-center gap-2 bg-white px-4 md:hidden">
+          <Search size={16} className="text-gray-400 shrink-0" />
+          <input
+            type="text"
+            autoFocus
+            placeholder="Buscar no produto..."
+            className="flex-1 bg-transparent text-base text-gray-700 outline-none placeholder-gray-400"
+          />
+          <button
+            onClick={() => setSearchOpen(false)}
+            aria-label="Fechar busca"
+            className="flex items-center justify-center w-10 h-10 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors shrink-0"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      )}
 
       {/* Action Icons */}
       <div className="flex items-center gap-1.5">
+        {/* Search trigger (mobile only) */}
+        <button
+          onClick={() => setSearchOpen(true)}
+          aria-label="Buscar"
+          className="md:hidden w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+        >
+          <Search size={17} />
+        </button>
         <button className="relative w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
           <Bell size={16} />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
@@ -185,7 +214,7 @@ export default function Header({ displayName, initials, email, onMenuClick }: He
                 onClick={() => setMenuOpen(false)}
               />
               {/* Dropdown */}
-              <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1.5 overflow-hidden">
+              <div className="absolute right-0 top-full mt-1.5 w-56 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1.5 overflow-hidden">
                 <div className="px-3.5 py-2.5 border-b border-gray-100">
                   <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
                   <p className="text-xs text-gray-500 truncate">{email}</p>
@@ -218,15 +247,15 @@ export default function Header({ displayName, initials, email, onMenuClick }: He
 
       {/* Profile Modal */}
       {showProfileModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => !savingProfile && setShowProfileModal(false)}
           />
-          
+
           {/* Card */}
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-gray-100 z-10 animate-in fade-in zoom-in duration-200">
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-5 sm:p-6 border border-gray-100 z-10 animate-in fade-in zoom-in duration-200">
             <button
               onClick={() => setShowProfileModal(false)}
               disabled={savingProfile}
