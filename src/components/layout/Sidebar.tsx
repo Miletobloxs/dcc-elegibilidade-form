@@ -64,7 +64,7 @@ export default function Sidebar({
       { href: "/admin/usuarios", label: "Usuários & Cadastros", icon: Users },
     ];
     if (role === "SUPER_ADMIN") {
-      adminItems.push({ href: "/deals/new", label: "Simular Deal", icon: Building2 });
+      adminItems.push({ href: "/deals/new", label: "Novo Deal", icon: Building2 });
     }
     groups.push({
       label: "Administração",
