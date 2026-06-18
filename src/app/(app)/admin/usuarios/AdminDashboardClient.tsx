@@ -70,11 +70,30 @@ interface Props {
 function CopyableIdTooltip({ label, id }: { label: string; id: string }) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = (e: React.MouseEvent) => {
+  const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(id);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    e.preventDefault();
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(id);
+      } else {
+        // Fallback para contexto inseguro (acesso via HTTP na rede local)
+        const ta = document.createElement("textarea");
+        ta.value = id;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Não quebra a UI caso a cópia não seja permitida pelo navegador
+      setCopied(false);
+    }
   };
 
   return (
@@ -87,7 +106,7 @@ function CopyableIdTooltip({ label, id }: { label: string; id: string }) {
       >
         <Info size={13} className="shrink-0" />
       </button>
-      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center z-50 pointer-events-none">
+      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex group-focus-within:flex flex-col items-center z-50 pointer-events-none">
         <span className="bg-gray-950 text-white text-[10px] py-1 px-2 rounded-md shadow-md whitespace-nowrap font-mono flex flex-col items-center gap-0.5 min-w-[120px] text-center">
           <span className="font-sans text-[8px] text-gray-400 uppercase tracking-wider font-bold">
             ID {label}
@@ -383,18 +402,137 @@ export default function AdminDashboardClient({
     }
   };
 
+  // ── Reusable renderers (shared between desktop table & mobile cards) ──────────
+  const renderRoleBadge = (u: User) => (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span
+        className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider
+        ${
+          u.role === "SUPER_ADMIN"
+            ? "bg-purple-100 text-purple-800"
+            : u.role === "ADMIN"
+            ? "bg-blue-100 text-blue-800"
+            : u.role === "ORIGINADOR"
+            ? "bg-emerald-100 text-emerald-800"
+            : "bg-gray-100 text-gray-700"
+        }`}
+      >
+        {u.role === "SUPER_ADMIN" && <Shield size={10} />}
+        {u.role}
+      </span>
+      {u.blocked && (
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-red-100 text-red-800 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+          Bloqueado
+        </span>
+      )}
+    </div>
+  );
+
+  const renderOriginatorStatus = (op: OriginatorProfile) => (
+    <span
+      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full
+      ${
+        op.status === "ATIVO"
+          ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+          : op.status === "EM_ANALISE"
+          ? "bg-amber-50 text-amber-600 border border-amber-100"
+          : "bg-red-50 text-red-600 border border-red-100"
+      }`}
+    >
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${
+          op.status === "ATIVO"
+            ? "bg-emerald-500"
+            : op.status === "EM_ANALISE"
+            ? "bg-amber-500"
+            : "bg-red-500"
+        }`}
+      />
+      {op.status}
+    </span>
+  );
+
+  const renderUserActions = (u: User) => {
+    const op = u.originatorProfile;
+    return (
+      <>
+        {isAdminOrSuper && (u.email !== "carlos.carneiro@bloxs.com.br" || currentEmail === "carlos.carneiro@bloxs.com.br") && (
+          <button
+            onClick={() => handleOpenUserEdit(u)}
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
+            title="Editar Perfil e Permissões"
+          >
+            <Edit2 size={12} /> Perfil
+          </button>
+        )}
+        {isSuperAdmin && u.email !== "carlos.carneiro@bloxs.com.br" && (
+          <button
+            onClick={() => handleDeleteUser(u.id, u.name || u.email)}
+            className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors shrink-0 whitespace-nowrap"
+            title="Excluir Usuário"
+          >
+            Excluir
+          </button>
+        )}
+        {op && (u.email !== "carlos.carneiro@bloxs.com.br" || currentEmail === "carlos.carneiro@bloxs.com.br") && (
+          <button
+            onClick={() => handleOpenOriginatorEdit(op)}
+            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
+            title="Editar Dados do Originador"
+          >
+            <Edit2 size={12} /> Originador
+          </button>
+        )}
+        {!op && u.email === "carlos.carneiro@bloxs.com.br" && currentEmail === "carlos.carneiro@bloxs.com.br" && (
+          <button
+            onClick={() => {
+              setTargetUserId(u.id);
+              handleOpenOriginatorEdit({
+                id: "new",
+                name: "",
+                cnpj: "",
+                type: "JURIDICA",
+                phone: "",
+                status: "ATIVO",
+                hubspotCompanyId: "",
+                hubspotContactId: "",
+              } as any);
+            }}
+            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
+            title="Vincular Perfil de Originador"
+          >
+            <Plus size={12} /> Originador
+          </button>
+        )}
+      </>
+    );
+  };
+
+  const renderOfferActions = (offer: Offer) => (
+    <button
+      onClick={() => handleOpenOfferEdit(offer)}
+      className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
+      title="Editar Dados do Deal"
+    >
+      <Edit2 size={12} /> Editar
+    </button>
+  );
+
+  const formatCnpj = (cnpj: string) =>
+    cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Gerenciamento Administrativo</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Gerenciamento Administrativo</h1>
         <p className="text-sm text-gray-500 mt-1">
           Painel de controle para auditoria de usuários, originadores cadastrados e backup de deals no Supabase.
         </p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex items-center gap-4">
           <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
             <Users size={20} />
@@ -445,10 +583,10 @@ export default function AdminDashboardClient({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 gap-6">
+      <div className="flex border-b border-gray-200 gap-4 sm:gap-6 overflow-x-auto">
         <button
           onClick={() => setTab("usuarios")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all outline-none ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all outline-none whitespace-nowrap shrink-0 ${
             tab === "usuarios"
               ? "border-blue-600 text-blue-600"
               : "border-transparent text-gray-500 hover:text-gray-900"
@@ -458,7 +596,7 @@ export default function AdminDashboardClient({
         </button>
         <button
           onClick={() => setTab("deals")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all outline-none ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all outline-none whitespace-nowrap shrink-0 ${
             tab === "deals"
               ? "border-blue-600 text-blue-600"
               : "border-transparent text-gray-500 hover:text-gray-900"
@@ -470,17 +608,18 @@ export default function AdminDashboardClient({
 
       {/* Tab Panels */}
       {tab === "usuarios" ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <>
+        <div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  <th className="py-3 px-6 min-w-[140px]">Usuário / Email</th>
-                  <th className="py-3 px-6 min-w-[100px]">Perfil / Função</th>
-                  <th className="py-3 px-6 min-w-[180px]">Dados do Originador</th>
-                  <th className="py-3 px-6 min-w-[80px]">Status</th>
-                  <th className="py-3 px-6 min-w-[180px]">Sincronização HubSpot</th>
-                  <th className="py-3 px-6 min-w-[100px]">Ações</th>
+                  <th className="py-3 px-4">Usuário / Email</th>
+                  <th className="py-3 px-4">Perfil / Função</th>
+                  <th className="py-3 px-4">Dados do Originador</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Sincronização HubSpot</th>
+                  <th className="py-3 px-4">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
@@ -488,35 +627,12 @@ export default function AdminDashboardClient({
                   const op = u.originatorProfile;
                   return (
                     <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="py-4.5 px-6">
-                        <p className="font-semibold text-gray-900">{u.name || "Sem nome"}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{u.email}</p>
+                      <td className="py-4 px-4">
+                        <p className="font-semibold text-gray-900 break-words">{u.name || "Sem nome"}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 break-all">{u.email}</p>
                       </td>
-                      <td className="py-4.5 px-6">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span
-                            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider
-                            ${
-                              u.role === "SUPER_ADMIN"
-                                ? "bg-purple-100 text-purple-800"
-                                : u.role === "ADMIN"
-                                ? "bg-blue-100 text-blue-800"
-                                : u.role === "ORIGINADOR"
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-gray-100 text-gray-700"
-                            }`}
-                          >
-                            {u.role === "SUPER_ADMIN" && <Shield size={10} />}
-                            {u.role}
-                          </span>
-                          {u.blocked && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-red-100 text-red-800 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
-                              Bloqueado
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4.5 px-6">
+                      <td className="py-4 px-4">{renderRoleBadge(u)}</td>
+                      <td className="py-4 px-4">
                         {op ? (
                           <div className="space-y-1 text-xs">
                             <div className="flex items-center gap-1.5 mb-1">
@@ -531,10 +647,7 @@ export default function AdminDashboardClient({
                               <Building2 size={12} className="text-gray-400" />
                               CNPJ:{" "}
                               <span className="font-mono text-gray-500 font-semibold">
-                                {op.cnpj.replace(
-                                  /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-                                  "$1.$2.$3/$4-$5"
-                                )}
+                                {formatCnpj(op.cnpj)}
                               </span>
                             </p>
                             <p className="text-gray-400">
@@ -548,34 +661,10 @@ export default function AdminDashboardClient({
                           <span className="text-xs text-gray-400 italic">Nenhum vínculo comercial</span>
                         )}
                       </td>
-                      <td className="py-4.5 px-6">
-                        {op ? (
-                          <span
-                            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full
-                            ${
-                              op.status === "ATIVO"
-                                ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                                : op.status === "EM_ANALISE"
-                                ? "bg-amber-50 text-amber-600 border border-amber-100"
-                                : "bg-red-50 text-red-600 border border-red-100"
-                            }`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                op.status === "ATIVO"
-                                  ? "bg-emerald-500"
-                                  : op.status === "EM_ANALISE"
-                                  ? "bg-amber-500"
-                                  : "bg-red-500"
-                              }`}
-                            />
-                            {op.status}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-400">-</span>
-                        )}
+                      <td className="py-4 px-4">
+                        {op ? renderOriginatorStatus(op) : <span className="text-xs text-gray-400">-</span>}
                       </td>
-                      <td className="py-4.5 px-6">
+                      <td className="py-4 px-4">
                         {op ? (
                           <div className="text-xs">
                             {op.hubspotContactId ? (
@@ -598,57 +687,8 @@ export default function AdminDashboardClient({
                           <span className="text-xs text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="py-4.5 px-6">
-                        <div className="flex flex-col gap-1 items-start">
-                          {isAdminOrSuper && (u.email !== "carlos.carneiro@bloxs.com.br" || currentEmail === "carlos.carneiro@bloxs.com.br") && (
-                            <button
-                              onClick={() => handleOpenUserEdit(u)}
-                              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
-                              title="Editar Perfil e Permissões"
-                            >
-                              <Edit2 size={12} /> Perfil
-                            </button>
-                          )}
-                          {isSuperAdmin && u.email !== "carlos.carneiro@bloxs.com.br" && (
-                            <button
-                              onClick={() => handleDeleteUser(u.id, u.name || u.email)}
-                              className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors shrink-0 whitespace-nowrap"
-                              title="Excluir Usuário"
-                            >
-                              Excluir
-                            </button>
-                          )}
-                          {op && (u.email !== "carlos.carneiro@bloxs.com.br" || currentEmail === "carlos.carneiro@bloxs.com.br") && (
-                            <button
-                              onClick={() => handleOpenOriginatorEdit(op)}
-                              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
-                              title="Editar Dados do Originador"
-                            >
-                              <Edit2 size={12} /> Originador
-                            </button>
-                          )}
-                          {!op && u.email === "carlos.carneiro@bloxs.com.br" && currentEmail === "carlos.carneiro@bloxs.com.br" && (
-                            <button
-                              onClick={() => {
-                                setTargetUserId(u.id);
-                                handleOpenOriginatorEdit({
-                                  id: "new",
-                                  name: "",
-                                  cnpj: "",
-                                  type: "JURIDICA",
-                                  phone: "",
-                                  status: "ATIVO",
-                                  hubspotCompanyId: "",
-                                  hubspotContactId: "",
-                                } as any);
-                              }}
-                              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
-                              title="Vincular Perfil de Originador"
-                            >
-                              <Plus size={12} /> Originador
-                            </button>
-                          )}
-                        </div>
+                      <td className="py-4 px-4">
+                        <div className="flex flex-col gap-1 items-start">{renderUserActions(u)}</div>
                       </td>
                     </tr>
                   );
@@ -657,20 +697,79 @@ export default function AdminDashboardClient({
             </table>
           </div>
         </div>
+
+        {/* Mobile cards — Usuários */}
+        <div className="md:hidden space-y-3">
+          {users.map((u) => {
+            const op = u.originatorProfile;
+            return (
+              <div key={u.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900 break-words">{u.name || "Sem nome"}</p>
+                  <p className="text-xs text-gray-400 break-all">{u.email}</p>
+                </div>
+                {renderRoleBadge(u)}
+
+                {op ? (
+                  <div className="border-t border-gray-100 pt-3 space-y-1.5 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-950 font-bold text-sm break-words" title={op.name}>
+                        {op.name}
+                      </span>
+                      {op.hubspotCompanyId && <CopyableIdTooltip label="Empresa" id={op.hubspotCompanyId} />}
+                    </div>
+                    <p className="text-gray-800 flex items-center gap-1.5 font-medium">
+                      <Building2 size={12} className="text-gray-400 shrink-0" />
+                      CNPJ:{" "}
+                      <span className="font-mono text-gray-500 font-semibold">{formatCnpj(op.cnpj)}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-gray-400">
+                      <span>Tipo: <span className="text-gray-600 font-medium">{op.type}</span></span>
+                      <span>Telefone: <span className="text-gray-600 font-medium">{op.phone}</span></span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      {renderOriginatorStatus(op)}
+                      {op.hubspotContactId ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                          <CheckCircle2 size={12} className="shrink-0" /> Contato: {u.name || "Sem nome"}
+                          <CopyableIdTooltip label="Contato" id={op.hubspotContactId} />
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
+                          <AlertTriangle size={12} className="shrink-0" /> Contato desvinculado
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="border-t border-gray-100 pt-3 text-xs text-gray-400 italic">
+                    Nenhum vínculo comercial
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-3">
+                  {renderUserActions(u)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        </>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <>
+        <div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  <th className="py-3 px-6 min-w-[140px]">Empresa / Deal</th>
-                  <th className="py-3 px-6 min-w-[100px]">Criado em</th>
-                  <th className="py-3 px-6 min-w-[140px]">Originador</th>
-                  <th className="py-3 px-6 min-w-[110px]">Volume Solicitado</th>
-                  <th className="py-3 px-6 min-w-[160px]">Estrutura & Taxa</th>
-                  <th className="py-3 px-6 min-w-[110px]">HubSpot Deal ID</th>
-                  <th className="py-3 px-6 min-w-[180px]">Detalhes do Backup</th>
-                  <th className="py-3 px-6 min-w-[80px]">Ações</th>
+                  <th className="py-3 px-4">Empresa / Deal</th>
+                  <th className="py-3 px-4">Criado em</th>
+                  <th className="py-3 px-4">Originador</th>
+                  <th className="py-3 px-4">Volume</th>
+                  <th className="py-3 px-4">Estrutura & Taxa</th>
+                  <th className="py-3 px-4">HubSpot ID</th>
+                  <th className="py-3 px-4">Detalhes do Backup</th>
+                  <th className="py-3 px-4">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
@@ -678,7 +777,7 @@ export default function AdminDashboardClient({
                   const meta = offer.metadata || {};
                   return (
                     <tr key={offer.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="py-4.5 px-6">
+                      <td className="py-4 px-4">
                         <p className="font-semibold text-gray-900">{meta?.empresaNome || offer.name}</p>
                         {meta?.empresaSite && (
                           <a
@@ -691,7 +790,7 @@ export default function AdminDashboardClient({
                           </a>
                         )}
                       </td>
-                      <td className="py-4.5 px-6 whitespace-nowrap text-xs text-gray-500" suppressHydrationWarning>
+                      <td className="py-4 px-4 whitespace-nowrap text-xs text-gray-500" suppressHydrationWarning>
                         <div className="font-medium text-gray-700">
                           {new Date(offer.createdAt).toLocaleDateString("pt-BR")}
                         </div>
@@ -699,17 +798,17 @@ export default function AdminDashboardClient({
                           {new Date(offer.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </td>
-                      <td className="py-4.5 px-6">
+                      <td className="py-4 px-4">
                         <p className="font-semibold text-gray-800">{offer.originator.name}</p>
                         <p className="text-xs text-gray-400 font-mono mt-0.5">{offer.originator.cnpj}</p>
                       </td>
-                      <td className="py-4.5 px-6 font-bold text-gray-900">
+                      <td className="py-4 px-4 font-bold text-gray-900">
                         {Number(offer.volume).toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",
                         })}
                       </td>
-                      <td className="py-4.5 px-6">
+                      <td className="py-4 px-4">
                         <div className="space-y-1 text-xs">
                           <p className="text-gray-800 font-semibold">
                             {meta.estruturaInstrumento || "Sem Produto"}
@@ -726,7 +825,7 @@ export default function AdminDashboardClient({
                           </p>
                         </div>
                       </td>
-                      <td className="py-4.5 px-6">
+                      <td className="py-4 px-4">
                         {meta?.hubspotDealId ? (
                           <span className="flex items-center gap-1.5 text-emerald-600 font-semibold text-xs">
                             <CheckCircle2 size={13} /> {meta.hubspotDealId}
@@ -737,7 +836,7 @@ export default function AdminDashboardClient({
                           </span>
                         )}
                       </td>
-                      <td className="py-4.5 px-6 max-w-xs">
+                      <td className="py-4 px-4 max-w-xs">
                         <div className="space-y-1 text-xs text-gray-500">
                           <p className="line-clamp-2">
                             <span className="font-semibold text-gray-700">Atividade:</span>{" "}
@@ -755,15 +854,7 @@ export default function AdminDashboardClient({
                           )}
                         </div>
                       </td>
-                      <td className="py-4.5 px-6">
-                        <button
-                          onClick={() => handleOpenOfferEdit(offer)}
-                          className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
-                          title="Editar Dados do Deal"
-                        >
-                          <Edit2 size={12} /> Editar
-                        </button>
-                      </td>
+                      <td className="py-4 px-4">{renderOfferActions(offer)}</td>
                     </tr>
                   );
                 })}
@@ -771,6 +862,93 @@ export default function AdminDashboardClient({
             </table>
           </div>
         </div>
+
+        {/* Mobile cards — Deals */}
+        <div className="md:hidden space-y-3">
+          {offers.map((offer) => {
+            const meta = offer.metadata || {};
+            return (
+              <div key={offer.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 break-words">{meta?.empresaNome || offer.name}</p>
+                    {meta?.empresaSite && (
+                      <a
+                        href={`https://${meta.empresaSite}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:underline break-all"
+                      >
+                        {meta.empresaSite}
+                      </a>
+                    )}
+                  </div>
+                  <p className="font-bold text-gray-900 text-sm whitespace-nowrap shrink-0">
+                    {Number(offer.volume).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-3 space-y-1 text-xs">
+                  <p className="text-gray-800">
+                    <span className="font-semibold">Originador:</span> {offer.originator.name}
+                  </p>
+                  <p className="text-gray-400 font-mono">{offer.originator.cnpj}</p>
+                  <p className="text-gray-400" suppressHydrationWarning>
+                    Criado em {new Date(offer.createdAt).toLocaleDateString("pt-BR")} às{" "}
+                    {new Date(offer.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-3 space-y-1 text-xs">
+                  <p className="text-gray-800 font-semibold">{meta.estruturaInstrumento || "Sem Produto"}</p>
+                  <p className="text-gray-400">
+                    Remuneração:{" "}
+                    <span className="text-gray-600 font-medium">
+                      {meta.estruturaIndexador} {meta.estruturaTaxa ? `+ ${meta.estruturaTaxa}% a.a.` : ""}
+                    </span>
+                  </p>
+                  <p className="text-gray-400">
+                    Fluxo: <span className="text-gray-600 font-medium">{meta.estruturaFluxo}</span>
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-3 space-y-2 text-xs">
+                  {meta?.hubspotDealId ? (
+                    <span className="flex items-center gap-1.5 text-emerald-600 font-semibold">
+                      <CheckCircle2 size={13} className="shrink-0" /> {meta.hubspotDealId}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-red-500 font-semibold">
+                      <AlertTriangle size={13} className="shrink-0" /> Sem HubSpot ID
+                    </span>
+                  )}
+                  <div className="space-y-1 text-gray-500">
+                    {meta.empresaDescricao && (
+                      <p>
+                        <span className="font-semibold text-gray-700">Atividade:</span> {meta.empresaDescricao}
+                      </p>
+                    )}
+                    {meta.captacaoFinalidade && (
+                      <p>
+                        <span className="font-semibold text-gray-700">Finalidade:</span> {meta.captacaoFinalidade}
+                      </p>
+                    )}
+                    {meta.captacaoGarantia && (
+                      <p>
+                        <span className="font-semibold text-gray-700">Garantia:</span> {meta.captacaoGarantia}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-3">
+                  {renderOfferActions(offer)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        </>
       )}
 
       {/* ── MODAL: USER EDIT (SUPER_ADMIN ONLY) ────────────────────────────────── */}
@@ -916,7 +1094,7 @@ export default function AdminDashboardClient({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
                     CNPJ (apenas números)
@@ -946,7 +1124,7 @@ export default function AdminDashboardClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
                     Telefone
@@ -982,7 +1160,7 @@ export default function AdminDashboardClient({
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
                   <Info size={11} /> Sincronização HubSpot
                 </p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">
                       Company ID
@@ -1063,7 +1241,7 @@ export default function AdminDashboardClient({
               </button>
             </div>
             <form onSubmit={handleSaveOffer} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
                     Nome da Operação
@@ -1090,7 +1268,7 @@ export default function AdminDashboardClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
                     Status da Captação
@@ -1124,7 +1302,7 @@ export default function AdminDashboardClient({
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
                   Detalhes da Empresa
                 </p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">
                       Razão Social
@@ -1166,7 +1344,7 @@ export default function AdminDashboardClient({
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
                   Estrutura Financeira (Backup)
                 </p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">
                       Instrumento Financeiro
@@ -1193,7 +1371,7 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">
                       Taxa Adicional (% a.a.)

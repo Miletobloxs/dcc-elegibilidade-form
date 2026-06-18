@@ -71,8 +71,19 @@ export default async function AdminUsuariosPage() {
     ...off,
     volume: Number(off.volume),
     raised: Number(off.raised),
+    minTicket: Number(off.minTicket),
+    deadline: off.deadline.toISOString(),
     createdAt: off.createdAt.toISOString(),
     updatedAt: off.updatedAt.toISOString(),
+    originator: off.originator
+      ? {
+          ...off.originator,
+          totalEmitted: Number(off.originator.totalEmitted),
+          registrationDate: off.originator.registrationDate.toISOString(),
+          createdAt: off.originator.createdAt.toISOString(),
+          updatedAt: off.originator.updatedAt.toISOString(),
+        }
+      : null,
   }));
 
   return (
