@@ -23,10 +23,12 @@ export async function PUT(request: Request) {
       );
     }
 
+    const isSuperAdmin = dbUser.role === "SUPER_ADMIN";
+
     const body = await request.json();
     const { id, name, role, blocked } = body;
 
-    if (!id || !role) {
+    if (!id) {
       return NextResponse.json({ message: "Campos obrigatórios ausentes." }, { status: 400 });
     }
 
@@ -41,12 +43,13 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Update user name, role, and blocked status in Prisma
+    // Update user in Prisma. Only SUPER_ADMIN may change the role;
+    // for ADMIN the incoming role is ignored (no privilege escalation).
     const updated = await prisma.user.update({
       where: { id },
       data: {
         name,
-        role,
+        role: isSuperAdmin ? role : undefined,
         blocked: blocked !== undefined ? Boolean(blocked) : undefined,
       },
       include: { originatorProfile: true }

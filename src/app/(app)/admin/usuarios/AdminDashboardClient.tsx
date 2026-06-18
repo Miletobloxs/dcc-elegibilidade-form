@@ -178,7 +178,7 @@ export default function AdminDashboardClient({
 
   // Open User Edit Modal
   const handleOpenUserEdit = (user: User) => {
-    if (!isSuperAdmin) return;
+    if (!isAdminOrSuper) return;
     if (user.email === "carlos.carneiro@bloxs.com.br" && currentEmail !== "carlos.carneiro@bloxs.com.br") return;
     setEditingUser(user);
     setUserForm({
@@ -951,7 +951,7 @@ export default function AdminDashboardClient({
         </>
       )}
 
-      {/* ── MODAL: USER EDIT (SUPER_ADMIN ONLY) ────────────────────────────────── */}
+      {/* ── MODAL: USER EDIT (ADMIN edita; role apenas SUPER_ADMIN) ─────────────── */}
       {editingUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full border border-gray-100 overflow-hidden transform scale-100 transition-all">
@@ -1000,7 +1000,8 @@ export default function AdminDashboardClient({
                 <select
                   value={userForm.role}
                   onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all bg-white"
+                  disabled={!isSuperAdmin}
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-base sm:text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all bg-white disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                 >
                   <option value="SUPER_ADMIN">SUPER_ADMIN (Dono / Administrador Geral)</option>
                   <option value="ADMIN">ADMIN (Equipe Interna)</option>
@@ -1009,6 +1010,11 @@ export default function AdminDashboardClient({
                   <option value="ASSESSOR">ASSESSOR</option>
                   <option value="INVESTIDOR">INVESTIDOR (Padrão)</option>
                 </select>
+                {!isSuperAdmin && (
+                  <p className="text-[11px] text-gray-400 mt-1.5">
+                    Apenas o Super Admin pode alterar a função do usuário.
+                  </p>
+                )}
               </div>
 
               {/* Bloquear Usuário (somente se não for o próprio carlos) */}
