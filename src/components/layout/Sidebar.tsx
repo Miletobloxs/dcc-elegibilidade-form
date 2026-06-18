@@ -21,6 +21,7 @@ import {
   FileText,
   GitBranch,
   Users,
+  X,
 } from "lucide-react";
 
 type NavItem = {
@@ -43,7 +44,15 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-export default function Sidebar({ role }: { role?: string }) {
+export default function Sidebar({
+  role,
+  open = false,
+  onClose,
+}: {
+  role?: string;
+  open?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
 
   const isActive = (href: string) =>
@@ -73,10 +82,18 @@ export default function Sidebar({ role }: { role?: string }) {
   const logoHref = (role === "SUPER_ADMIN" || role === "ADMIN") ? "/admin/usuarios" : "/deals/new";
 
   return (
-    <aside className="w-64 min-w-64 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0">
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 w-64 min-w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:h-screen lg:sticky lg:top-0 lg:translate-x-0 lg:shadow-none ${
+        open ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+      }`}
+    >
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-gray-100">
-        <Link href={logoHref} className="block hover:opacity-80 transition-opacity">
+      <div className="px-5 py-5 border-b border-gray-100 flex items-center justify-between">
+        <Link
+          href={logoHref}
+          onClick={onClose}
+          className="block hover:opacity-80 transition-opacity"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 112 28" className="h-7 w-auto">
             <path fill="#032952" d="M71.3564 22.8712C67.581 22.8712 66.4493 20.2289 66.4493 17.5865C66.4493 14.9442 67.5823 12.3018 71.3564 12.3018C75.1304 12.3018 76.2634 14.9442 76.2634 17.5865C76.2634 20.2289 75.1304 22.8712 71.3564 22.8712ZM71.3564 8.15009C65.3163 8.15009 61.9199 11.9254 61.9199 17.5865C61.9199 23.2476 65.3176 27.0229 71.3564 27.0229C77.3951 27.0229 80.7928 23.2476 80.7928 17.5865C80.7928 11.9254 77.3951 8.15009 71.3564 8.15009Z"></path>
             <path fill="#032952" d="M105.707 15.6982C103.857 15.1695 103.443 14.4779 103.443 13.8724C103.443 13.0558 104.198 12.3005 105.707 12.3005C106.811 12.3005 108.015 12.5727 109.123 13.2837L111.695 10.3666C109.967 8.78562 108 8.14749 105.33 8.14749C101.178 8.14749 98.9121 10.601 98.9121 13.9987C98.9121 17.5839 101.932 18.7169 104.952 19.4722C107.464 20.1 107.595 20.7146 107.595 21.3593C107.595 22.0039 106.839 22.8686 105.33 22.8686C104.022 22.8686 102.715 22.5834 101.583 21.8333L98.9629 24.8038C100.712 26.4044 103.348 27.0204 105.709 27.0204C110.238 27.0204 112.126 23.8115 112.126 21.358C112.126 17.2063 108.351 16.4509 105.709 15.6956"></path>
@@ -87,6 +104,13 @@ export default function Sidebar({ role }: { role?: string }) {
             <path fill="#2E61FF" d="M5.13365 12.9556H19.679C22.9868 12.9556 25.6682 10.2741 25.6682 6.96631C25.6682 3.65848 22.9868 0.977051 19.679 0.977051H3.42243C1.5328 0.977051 0 2.50985 0 4.39948V15.288C1.25541 13.862 3.08904 12.9556 5.13365 12.9556Z"></path>
           </svg>
         </Link>
+        <button
+          onClick={onClose}
+          aria-label="Fechar menu"
+          className="lg:hidden flex items-center justify-center w-10 h-10 -mr-2 rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       {/* Nav */}
@@ -106,7 +130,8 @@ export default function Sidebar({ role }: { role?: string }) {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${active
+                      onClick={onClose}
+                      className={`flex items-center gap-3 px-3 py-3 lg:py-2.5 min-h-[44px] lg:min-h-0 rounded-xl text-sm font-medium transition-all duration-150 ${active
                           ? "bg-blue-600 text-white shadow-sm"
                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                         }`}

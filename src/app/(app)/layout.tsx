@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
+import AppShell from "@/components/layout/AppShell";
 import prisma from "@/lib/prisma";
 import SupportWidget from "@/components/layout/SupportWidget";
 
@@ -55,13 +54,16 @@ export default async function AppLayout({
     .slice(0, 2);
 
   return (
-    <div className="flex h-screen bg-[#F4F6F8] overflow-hidden">
-      <Sidebar role={role} />
-      <div className="flex flex-1 flex-col min-w-0">
-        <Header displayName={displayName} initials={initials} email={activeUser.email ?? ""} />
-        <main className="flex-1 overflow-y-auto">{children}</main>
-      </div>
+    <>
+      <AppShell
+        role={role}
+        displayName={displayName}
+        initials={initials}
+        email={activeUser.email ?? ""}
+      >
+        {children}
+      </AppShell>
       <SupportWidget />
-    </div>
+    </>
   );
 }

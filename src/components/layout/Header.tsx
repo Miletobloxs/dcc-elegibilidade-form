@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, HelpCircle, Search, LogOut, ChevronDown, Settings, Loader2, X, CheckCircle2 } from "lucide-react";
+import { Bell, HelpCircle, Search, LogOut, ChevronDown, Settings, Loader2, X, CheckCircle2, Menu } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type HeaderProps = {
   displayName: string;
   initials: string;
   email: string;
+  onMenuClick?: () => void;
 };
 
-export default function Header({ displayName, initials, email }: HeaderProps) {
+export default function Header({ displayName, initials, email, onMenuClick }: HeaderProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -128,9 +129,18 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
   }, [showProfileModal]);
 
   return (
-    <header className="bg-white border-b border-gray-200 h-14 flex items-center px-6 gap-4 shrink-0">
-      {/* Search */}
-      <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3.5 py-2 w-72 mr-auto">
+    <header className="bg-white border-b border-gray-200 h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 shrink-0">
+      {/* Hamburger (mobile only) */}
+      <button
+        onClick={onMenuClick}
+        aria-label="Abrir menu"
+        className="lg:hidden flex items-center justify-center w-10 h-10 -ml-1 rounded-xl text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Search (hidden on mobile — busca mobile completa na Etapa 2) */}
+      <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-xl px-3.5 py-2 w-72 mr-auto">
         <Search size={14} className="text-gray-400 shrink-0" />
         <input
           type="text"
@@ -138,6 +148,9 @@ export default function Header({ displayName, initials, email }: HeaderProps) {
           className="bg-transparent text-sm text-gray-600 outline-none placeholder-gray-400 w-full"
         />
       </div>
+
+      {/* Spacer when search is hidden, to keep action icons right-aligned */}
+      <div className="flex-1 md:hidden" />
 
       {/* Action Icons */}
       <div className="flex items-center gap-1.5">
