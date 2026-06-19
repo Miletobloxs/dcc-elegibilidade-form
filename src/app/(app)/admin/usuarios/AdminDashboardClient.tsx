@@ -758,109 +758,118 @@ export default function AdminDashboardClient({
       ) : (
         <>
         <div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  <th className="py-3 px-4">Empresa / Deal</th>
-                  <th className="py-3 px-4">Criado em</th>
-                  <th className="py-3 px-4">Originador</th>
-                  <th className="py-3 px-4">Volume</th>
-                  <th className="py-3 px-4">Estrutura & Taxa</th>
-                  <th className="py-3 px-4">HubSpot ID</th>
-                  <th className="py-3 px-4">Detalhes do Backup</th>
-                  <th className="py-3 px-4">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
-                {offers.map((offer) => {
-                  const meta = offer.metadata || {};
-                  return (
-                    <tr key={offer.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="py-4 px-4">
-                        <p className="font-semibold text-gray-900">{meta?.empresaNome || offer.name}</p>
-                        {meta?.empresaSite && (
-                          <a
-                            href={`https://${meta.empresaSite}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-blue-600 hover:underline mt-0.5 block"
-                          >
-                            {meta.empresaSite}
-                          </a>
-                        )}
-                      </td>
-                      <td className="py-4 px-4 whitespace-nowrap text-xs text-gray-500" suppressHydrationWarning>
-                        <div className="font-medium text-gray-700">
-                          {new Date(offer.createdAt).toLocaleDateString("pt-BR")}
-                        </div>
-                        <div className="text-[10px] text-gray-400 mt-0.5">
-                          {new Date(offer.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <p className="font-semibold text-gray-800">{offer.originator.name}</p>
-                        <p className="text-xs text-gray-400 font-mono mt-0.5">{offer.originator.cnpj}</p>
-                      </td>
-                      <td className="py-4 px-4 font-bold text-gray-900">
-                        {Number(offer.volume).toLocaleString("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        })}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="space-y-1 text-xs">
-                          <p className="text-gray-800 font-semibold">
-                            {meta.estruturaInstrumento || "Sem Produto"}
-                          </p>
+          <table className="w-full text-left border-collapse table-fixed">
+            <colgroup>
+              <col className="w-[18%]" />
+              <col className="w-[14%]" />
+              <col className="w-[16%]" />
+              <col className="w-[16%]" />
+              <col className="w-[20%]" />
+              <col className="w-[16%]" />
+            </colgroup>
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <th className="py-3 px-3">Empresa / Deal</th>
+                <th className="py-3 px-3">Originador</th>
+                <th className="py-3 px-3">Volume</th>
+                <th className="py-3 px-3">Estrutura & Taxa</th>
+                <th className="py-3 px-3">Detalhes do Backup</th>
+                <th className="py-3 px-3">HubSpot / Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 text-xs">
+              {offers.map((offer) => {
+                const meta = offer.metadata || {};
+                return (
+                  <tr key={offer.id} className="hover:bg-gray-50/50 transition-colors align-top">
+                    <td className="py-3 px-3">
+                      <p className="font-semibold text-gray-900 truncate" title={meta?.empresaNome || offer.name}>
+                        {meta?.empresaNome || offer.name}
+                      </p>
+                      {meta?.empresaSite && (
+                        <a
+                          href={`https://${meta.empresaSite}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline truncate block"
+                        >
+                          {meta.empresaSite}
+                        </a>
+                      )}
+                      <p className="text-[10px] text-gray-400 mt-0.5" suppressHydrationWarning>
+                        {new Date(offer.createdAt).toLocaleDateString("pt-BR")} às{" "}
+                        {new Date(offer.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </td>
+                    <td className="py-3 px-3">
+                      <p className="font-semibold text-gray-800 truncate" title={offer.originator.name}>
+                        {offer.originator.name}
+                      </p>
+                      <p className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">{offer.originator.cnpj}</p>
+                    </td>
+                    <td className="py-3 px-3 font-bold text-gray-900 whitespace-nowrap">
+                      {Number(offer.volume).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="space-y-0.5">
+                        <p className="text-gray-800 font-semibold truncate" title={meta.estruturaInstrumento}>
+                          {meta.estruturaInstrumento || "Sem Produto"}
+                        </p>
+                        {(meta.estruturaIndexador || meta.estruturaTaxa) && (
                           <p className="text-gray-400">
-                            Remuneração:{" "}
                             <span className="text-gray-600 font-medium">
-                              {meta.estruturaIndexador}{" "}
-                              {meta.estruturaTaxa ? `+ ${meta.estruturaTaxa}% a.a.` : ""}
+                              {meta.estruturaIndexador}{meta.estruturaTaxa ? ` + ${meta.estruturaTaxa}% a.a.` : ""}
                             </span>
                           </p>
+                        )}
+                        {meta.estruturaFluxo && (
                           <p className="text-gray-400">
                             Fluxo: <span className="text-gray-600 font-medium">{meta.estruturaFluxo}</span>
                           </p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        {meta?.hubspotDealId ? (
-                          <span className="flex items-center gap-1.5 text-emerald-600 font-semibold text-xs">
-                            <CheckCircle2 size={13} /> {meta.hubspotDealId}
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1.5 text-red-500 font-semibold text-xs">
-                            <AlertTriangle size={13} /> Sem HubSpot ID
-                          </span>
                         )}
-                      </td>
-                      <td className="py-4 px-4 max-w-xs">
-                        <div className="space-y-1 text-xs text-gray-500">
+                      </div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="space-y-1 text-gray-500">
+                        {meta.empresaDescricao && (
                           <p className="line-clamp-2">
-                            <span className="font-semibold text-gray-700">Atividade:</span>{" "}
-                            {meta.empresaDescricao}
+                            <span className="font-semibold text-gray-700">Atividade:</span>{" "}{meta.empresaDescricao}
                           </p>
+                        )}
+                        {meta.captacaoFinalidade && (
                           <p>
-                            <span className="font-semibold text-gray-700">Finalidade:</span>{" "}
-                            {meta.captacaoFinalidade}
+                            <span className="font-semibold text-gray-700">Finalidade:</span>{" "}{meta.captacaoFinalidade}
                           </p>
-                          {meta.captacaoGarantia && (
-                            <p>
-                              <span className="font-semibold text-gray-700">Garantia:</span>{" "}
-                              {meta.captacaoGarantia}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">{renderOfferActions(offer)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        )}
+                        {meta.captacaoGarantia && (
+                          <p>
+                            <span className="font-semibold text-gray-700">Garantia:</span>{" "}
+                            {meta.captacaoGarantia.split(";").join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3">
+                      {meta?.hubspotDealId ? (
+                        <span className="flex items-center gap-1 text-emerald-600 font-semibold mb-2">
+                          <CheckCircle2 size={12} />
+                          <span className="truncate font-mono" title={meta.hubspotDealId}>{meta.hubspotDealId}</span>
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-red-500 font-semibold mb-2">
+                          <AlertTriangle size={12} /> Sem HubSpot ID
+                        </span>
+                      )}
+                      {renderOfferActions(offer)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
 
         {/* Mobile cards — Deals */}
@@ -935,7 +944,7 @@ export default function AdminDashboardClient({
                     )}
                     {meta.captacaoGarantia && (
                       <p>
-                        <span className="font-semibold text-gray-700">Garantia:</span> {meta.captacaoGarantia}
+                        <span className="font-semibold text-gray-700">Garantia:</span> {meta.captacaoGarantia.split(";").join(", ")}
                       </p>
                     )}
                   </div>

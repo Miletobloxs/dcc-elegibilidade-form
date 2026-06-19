@@ -75,6 +75,7 @@ export default function Sidebar({
       label: "Originação",
       items: [
         { href: "/deals/new", label: "Novo Deal", icon: Building2 },
+        { href: "/deals/meus", label: "Meus Deals", icon: FileText },
       ],
     });
   }

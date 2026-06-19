@@ -1,12 +1,28 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const token_hash = searchParams.get("token_hash");
+  const type = searchParams.get("type") as EmailOtpType | null;
   const next = searchParams.get("next") ?? "/deals/new";
 
+  // ── OTP flow (password recovery emails use token_hash + type=recovery) ──
+  if (token_hash && type) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+    if (!error) {
+      const destination = type === "recovery" ? "/recuperar-senha/alterar" : next;
+      return NextResponse.redirect(`${origin}${destination}`);
+    }
+    console.error("Auth callback OTP verify error:", error);
+    return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
+  }
+
+  // ── PKCE flow (OAuth / magic link) ──────────────────────────────────────
   if (code) {
     const supabase = await createClient();
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);

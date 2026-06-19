@@ -280,6 +280,10 @@ export async function POST(request: Request) {
 
     if (token) {
       try {
+        const readableGarantia = captacaoGarantia
+          ? captacaoGarantia.split(";").join(", ")
+          : "Não informado";
+
         const dealDescription = [
           `=== INFORMAÇÕES DA EMPRESA TOMADORA ===`,
           `Nome: ${empresaNome}`,
@@ -293,7 +297,7 @@ export async function POST(request: Request) {
           `=== DETALHES DA CAPTAÇÃO ===`,
           `Valor Solicitado: R$ ${Number(captacaoValor).toLocaleString("pt-BR")}`,
           `Finalidade: ${captacaoFinalidade}`,
-          `Garantia Oferecida: ${captacaoGarantia || "Não informado"}`,
+          `Garantia Oferecida: ${readableGarantia}`,
           `Valor Estimado da Garantia: ${captacaoGarantiaValor ? "R$ " + Number(captacaoGarantiaValor).toLocaleString("pt-BR") : "Não informado"}`,
           `Prazo Planejado: ${captacaoPrazo ? captacaoPrazo + " meses" : "Não informado"}`,
           `Riscos / Ponto de Atenção: ${captacaoRiscos || "Nenhum informado"}`,
@@ -318,6 +322,7 @@ export async function POST(request: Request) {
             description: dealDescription,
             deal_origin: "BYPASS_FORMS", // Bypass platform = Bypass Formulário
             company_persona: "SELL_SIDE",
+            collateral: captacaoGarantia || "",
           }
         };
 

@@ -32,13 +32,22 @@ const FINALIDADES = [
 ];
 
 const GARANTIAS = [
-  "Recebíveis / Cessão Fiduciária",
-  "Imóveis (Alienação Fiduciária)",
-  "Equipamentos / Máquinas",
-  "Aval dos Sócios / Fiança Pessoal",
-  "Fiança Bancária / Carta de Fiança",
-  "Sem Garantia / Clean",
-  "Outros"
+  { label: "Alienação Fiduciária de Imóveis", value: "Alienação Fiduciária de Imóveis" },
+  { label: "Cessão Fiduciária de Recebíveis", value: "Cessão Fiduciária de Recebíveis" },
+  { label: "Alienação Fiduciária de Participação Societária", value: "Alienação Fiduciária de Partipação Societária" },
+  { label: "Alienação Fiduciária de Equipamentos ou Estoque", value: "Alienação Fiduciária de Equipamentos ou Estoque" },
+  { label: "Aval", value: "Aval" },
+  { label: "Fiança", value: "Fiança" },
+  { label: "Coobrigação", value: "Coobrigação" },
+  { label: "Fundo de Reservas", value: "Fundo de Reservas" },
+  { label: "Fundo de Despesas", value: "Fundo de Despesas" },
+  { label: "Fundo de Liquidez", value: "Fundo de Liquidez" },
+  { label: "Fundo de Obras", value: "Fundo de Obras" },
+  { label: "Seguros", value: "Seguros" },
+  { label: "Estoque", value: "Estoque" },
+  { label: "Investimentos", value: "Investimentos" },
+  { label: "Outros", value: "Outros" },
+  { label: "N/A", value: "N/A" }
 ];
 
 const INSTRUMENTOS = [
@@ -98,7 +107,7 @@ export default function NewDealClient({
   // --- Step 2: Detalhes da Captação ---
   const [captacaoValor, setCaptacaoValor] = useState("");
   const [captacaoFinalidade, setCaptacaoFinalidade] = useState("");
-  const [captacaoGarantia, setCaptacaoGarantia] = useState("");
+  const [selectedGarantias, setSelectedGarantias] = useState<string[]>([]);
   const [captacaoGarantiaValor, setCaptacaoGarantiaValor] = useState("");
   const [captacaoPrazo, setCaptacaoPrazo] = useState("");
   const [captacaoRiscos, setCaptacaoRiscos] = useState("");
@@ -189,7 +198,7 @@ export default function NewDealClient({
           // Step 2
           captacaoValor: Number(captacaoValor),
           captacaoFinalidade,
-          captacaoGarantia,
+          captacaoGarantia: selectedGarantias.join(";"),
           captacaoGarantiaValor: captacaoGarantiaValor ? Number(captacaoGarantiaValor) : null,
           captacaoPrazo: captacaoPrazo ? Number(captacaoPrazo) : null,
           captacaoRiscos: captacaoRiscos.trim(),
@@ -220,7 +229,7 @@ export default function NewDealClient({
       setEmpresaFaturamento("");
       setCaptacaoValor("");
       setCaptacaoFinalidade("");
-      setCaptacaoGarantia("");
+      setSelectedGarantias([]);
       setCaptacaoGarantiaValor("");
       setCaptacaoPrazo("");
       setCaptacaoRiscos("");
@@ -450,31 +459,48 @@ export default function NewDealClient({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">O que a empresa pode oferecer como garantia?</label>
-                      <div className="relative">
-                        <select 
-                          value={captacaoGarantia} 
-                          onChange={(e) => setCaptacaoGarantia(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900 appearance-none cursor-pointer"
-                        >
-                          <option value="">Selecione as garantias</option>
-                          {GARANTIAS.map((g) => <option key={g} value={g}>{g}</option>)}
-                        </select>
-                        <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2.5">O que a empresa pode oferecer como garantia? (Selecione todas as que se aplicam)</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50/30 border border-gray-150 rounded-2xl p-4 mb-4">
+                      {GARANTIAS.map((g) => {
+                        const isChecked = selectedGarantias.includes(g.value);
+                        return (
+                          <label 
+                            key={g.value} 
+                            className={`flex items-start gap-2.5 p-3 rounded-xl border transition-all duration-200 cursor-pointer select-none ${
+                              isChecked 
+                                ? "bg-blue-50/40 border-blue-200 text-blue-900 shadow-sm" 
+                                : "bg-white border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50/30"
+                            }`}
+                          >
+                            <input 
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {
+                                if (isChecked) {
+                                  setSelectedGarantias(selectedGarantias.filter((item) => item !== g.value));
+                                } else {
+                                  setSelectedGarantias([...selectedGarantias, g.value]);
+                                }
+                              }}
+                              className="w-4 h-4 mt-0.5 text-blue-650 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                            />
+                            <span className="text-[11px] sm:text-xs font-semibold leading-snug">{g.label}</span>
+                          </label>
+                        );
+                      })}
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Qual o valor total estimado destas garantias?</label>
-                      <input 
-                        type="number" 
-                        value={captacaoGarantiaValor} 
-                        onChange={(e) => setCaptacaoGarantiaValor(e.target.value)}
-                        placeholder="Ex: 8000000"
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
-                      />
-                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Qual o valor total estimado destas garantias?</label>
+                    <input 
+                      type="number" 
+                      value={captacaoGarantiaValor} 
+                      onChange={(e) => setCaptacaoGarantiaValor(e.target.value)}
+                      placeholder="Ex: 8000000"
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-base sm:text-sm outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all text-gray-900"
+                    />
                   </div>
 
                   <div>
@@ -631,10 +657,14 @@ export default function NewDealClient({
                           <span className="text-slate-400 block">Finalidade:</span>
                           <span className="text-slate-800 font-semibold">{captacaoFinalidade}</span>
                         </div>
-                        {captacaoGarantia && (
+                        {selectedGarantias.length > 0 && (
                           <div>
-                            <span className="text-slate-400 block">Garantia:</span>
-                            <span className="text-slate-800 font-semibold">{captacaoGarantia}</span>
+                            <span className="text-slate-400 block">Garantias:</span>
+                            <span className="text-slate-800 font-semibold">
+                              {selectedGarantias
+                                .map((val) => GARANTIAS.find((g) => g.value === val)?.label || val)
+                                .join(", ")}
+                            </span>
                           </div>
                         )}
                         {captacaoGarantiaValor && (
