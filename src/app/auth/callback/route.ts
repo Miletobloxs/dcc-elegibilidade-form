@@ -11,19 +11,42 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") ?? "/deals/new";
 
   // ── OTP flow (password recovery emails use token_hash + type=recovery) ──
+  // Supabase custom SMTP sends: /auth/callback?token_hash=xxx&type=recovery
   if (token_hash && type) {
+    // For recovery, always try server-side first, but fall back to client-side
+    // so the page itself can handle it if the server context fails (PKCE issue).
+    if (type === "recovery") {
+      const supabase = await createClient();
+      const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+      if (!error) {
+        return NextResponse.redirect(`${origin}/recuperar-senha/alterar`);
+      }
+      // Server-side verify failed — pass tokens to client page to try there
+      console.warn("Server OTP verify failed, delegating to client:", error.message);
+      return NextResponse.redirect(
+        `${origin}/recuperar-senha/alterar?token_hash=${token_hash}&type=${type}`
+      );
+    }
+
+    // Non-recovery OTP (e.g. email confirmation)
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {
-      const destination = type === "recovery" ? "/recuperar-senha/alterar" : next;
-      return NextResponse.redirect(`${origin}${destination}`);
+      return NextResponse.redirect(`${origin}${next}`);
     }
     console.error("Auth callback OTP verify error:", error);
     return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
   }
 
-  // ── PKCE flow (OAuth / magic link) ──────────────────────────────────────
+  // ── PKCE flow (OAuth / magic link / recovery with code) ──────────────────
   if (code) {
+    // For password recovery via PKCE code, delegate to client-side page.
+    // The client already has code to call exchangeCodeForSession in the browser
+    // context where the PKCE code verifier is available in cookies/storage.
+    if (next.startsWith("/recuperar-senha")) {
+      return NextResponse.redirect(`${origin}${next}?code=${code}`);
+    }
+
     const supabase = await createClient();
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
     if (!exchangeError) {
@@ -75,13 +98,12 @@ export async function GET(request: Request) {
     console.error("Auth callback error during exchangeCodeForSession:", exchangeError);
   }
 
-  // ── Implicit Grant flow fallback (tokens in URL hash) ──────────────────
-  // If no code or token_hash is in the query params, it might be an implicit
-  // grant redirect where Supabase puts tokens in the URL hash.
-  // Server routes cannot read URL hashes. We must pass through to the client 
-  // page so the Supabase browser client can automatically parse the hash.
-  if (!code && !token_hash && next.startsWith("/recuperar-senha")) {
-    return NextResponse.redirect(`${origin}${next}`);
+  // ── Implicit Grant / Hash flow fallback ──────────────────────────────────
+  // Supabase sometimes puts tokens in the URL hash (#access_token=...).
+  // Server routes cannot read URL hashes — pass through to client page.
+  if (!code && !token_hash) {
+    // Default: client page will check for existing session or hash tokens
+    return NextResponse.redirect(`${origin}/recuperar-senha/alterar`);
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
