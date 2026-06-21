@@ -43,8 +43,8 @@ export async function GET(request: Request) {
     // For password recovery via PKCE code, delegate to client-side page.
     // The client already has code to call exchangeCodeForSession in the browser
     // context where the PKCE code verifier is available in cookies/storage.
-    if (next.startsWith("/recuperar-senha")) {
-      return NextResponse.redirect(`${origin}${next}?code=${code}`);
+    if (next.includes("recuperar-senha")) {
+      return NextResponse.redirect(`${origin}/recuperar-senha/alterar?code=${code}`);
     }
 
     const supabase = await createClient();
@@ -95,7 +95,11 @@ export async function GET(request: Request) {
       }
       return NextResponse.redirect(`${origin}${next}`);
     }
-    console.error("Auth callback error during exchangeCodeForSession:", exchangeError);
+    // exchangeCodeForSession failed — likely a PKCE verifier mismatch when
+    // the server doesn't have the browser's code verifier cookie.
+    // Forward the code to the client-side alterar page as a last resort.
+    console.warn("exchangeCodeForSession failed, delegating code to client page:", exchangeError?.message);
+    return NextResponse.redirect(`${origin}/recuperar-senha/alterar?code=${code}`);
   }
 
   // ── Implicit Grant / Hash flow fallback ──────────────────────────────────
