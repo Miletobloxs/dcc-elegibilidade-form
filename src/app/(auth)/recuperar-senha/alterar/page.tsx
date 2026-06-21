@@ -36,12 +36,13 @@ function AlterarSenhaForm() {
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const token_hash = searchParams.get("token_hash");
+  const type = searchParams.get("type");
+  const code = searchParams.get("code");
+
   // Exchange the token/code that Supabase appended to the URL
   useEffect(() => {
     const supabase = createClient();
-    const token_hash = searchParams.get("token_hash");
-    const type = searchParams.get("type");
-    const code = searchParams.get("code");
 
     async function bootstrap() {
       // OTP flow: token_hash (default to recovery if not provided)
@@ -77,18 +78,24 @@ function AlterarSenhaForm() {
       }
 
       // No token in URL — check for existing valid session (user navigated back or refreshed)
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setPageState("ready");
-      } else {
-        setSessionError("Acesso inválido. Por favor, solicite um novo link de recuperação.");
-        setPageState("error");
+      // Only do this if there is NO token or code in the raw window URL search string!
+      const hasTokenInWindow = typeof window !== "undefined" && 
+        (window.location.search.includes("token_hash") || window.location.search.includes("code"));
+
+      if (!hasTokenInWindow) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setPageState("ready");
+        } else {
+          setSessionError("Acesso inválido. Por favor, solicite um novo link de recuperação.");
+          setPageState("error");
+        }
       }
     }
 
     bootstrap();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [token_hash, type, code, router]);
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
