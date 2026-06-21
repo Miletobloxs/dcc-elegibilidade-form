@@ -75,5 +75,14 @@ export async function GET(request: Request) {
     console.error("Auth callback error during exchangeCodeForSession:", exchangeError);
   }
 
+  // ── Implicit Grant flow fallback (tokens in URL hash) ──────────────────
+  // If no code or token_hash is in the query params, it might be an implicit
+  // grant redirect where Supabase puts tokens in the URL hash.
+  // Server routes cannot read URL hashes. We must pass through to the client 
+  // page so the Supabase browser client can automatically parse the hash.
+  if (!code && !token_hash && next.startsWith("/recuperar-senha")) {
+    return NextResponse.redirect(`${origin}${next}`);
+  }
+
   return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
 }
