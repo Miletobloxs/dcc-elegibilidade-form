@@ -18,6 +18,7 @@ type Offer = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
+  EM_TRIAGEM: "Triagem",
   EM_CAPTACAO: "Em Captação",
   COMPLETA: "Completa",
   ADIMPLENTE: "Adimplente",
@@ -25,11 +26,27 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
+  EM_TRIAGEM: "bg-amber-100 text-amber-700",
   EM_CAPTACAO: "bg-blue-100 text-blue-700",
   COMPLETA: "bg-green-100 text-green-700",
   ADIMPLENTE: "bg-emerald-100 text-emerald-700",
   INADIMPLENTE: "bg-red-100 text-red-700",
 };
+
+// Bridge pré-deploy: o pipeline HubSpot fica em metadata.hubspotPipeline (JSON),
+// pois o build de produção ainda não conhece o enum EM_TRIAGEM. Enquanto o deal
+// estiver no status legado EM_CAPTACAO mas marcado no pipeline de TRIAGEM,
+// o badge exibe "Triagem".
+function offerBadge(offer: Offer): { label: string; color: string } {
+  const pipeline = offer.metadata?.hubspotPipeline as string | undefined;
+  if (offer.status === "EM_CAPTACAO" && pipeline === "TRIAGEM") {
+    return { label: "Triagem", color: "bg-amber-100 text-amber-700" };
+  }
+  return {
+    label: STATUS_LABEL[offer.status] ?? offer.status,
+    color: STATUS_COLOR[offer.status] ?? "bg-gray-100 text-gray-600",
+  };
+}
 
 function formatBRL(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -46,6 +63,7 @@ function formatDate(iso: string) {
 function DealCard({ offer }: { offer: Offer }) {
   const empresaNome = (offer.metadata?.empresaNome as string) || offer.name;
   const setor = (offer.metadata?.empresaSetor as string) || "—";
+  const badge = offerBadge(offer);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4 hover:shadow-md transition-shadow">
@@ -60,8 +78,8 @@ function DealCard({ offer }: { offer: Offer }) {
             <p className="text-xs text-gray-400 mt-0.5">{setor}</p>
           </div>
         </div>
-        <span className={`flex-shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ${STATUS_COLOR[offer.status] ?? "bg-gray-100 text-gray-600"}`}>
-          {STATUS_LABEL[offer.status] ?? offer.status}
+        <span className={`flex-shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ${badge.color}`}>
+          {badge.label}
         </span>
       </div>
 

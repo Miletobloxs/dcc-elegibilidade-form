@@ -454,6 +454,39 @@ export default function AdminDashboardClient({
     </span>
   );
 
+  const OFFER_STATUS_LABEL: Record<string, string> = {
+    EM_TRIAGEM: "Triagem",
+    EM_CAPTACAO: "Em Captação",
+    COMPLETA: "Completa",
+    ADIMPLENTE: "Adimplente",
+    INADIMPLENTE: "Inadimplente",
+  };
+
+  const OFFER_STATUS_COLOR: Record<string, string> = {
+    EM_TRIAGEM: "bg-amber-50 text-amber-700 border border-amber-100",
+    EM_CAPTACAO: "bg-blue-50 text-blue-700 border border-blue-100",
+    COMPLETA: "bg-green-50 text-green-700 border border-green-100",
+    ADIMPLENTE: "bg-emerald-50 text-emerald-700 border border-emerald-100",
+    INADIMPLENTE: "bg-red-50 text-red-700 border border-red-100",
+  };
+
+  const renderOfferStatus = (offer: Offer) => {
+    // Bridge pré-deploy: pipeline vem de metadata.hubspotPipeline (JSON, seguro
+    // p/ o build antigo de produção). Status legado EM_CAPTACAO + pipeline
+    // TRIAGEM → badge "Triagem".
+    const pipeline = offer.metadata?.hubspotPipeline as string | undefined;
+    const isTriagem = offer.status === "EM_CAPTACAO" && pipeline === "TRIAGEM";
+    const label = isTriagem ? "Triagem" : OFFER_STATUS_LABEL[offer.status] ?? offer.status;
+    const color = isTriagem
+      ? OFFER_STATUS_COLOR.EM_TRIAGEM
+      : OFFER_STATUS_COLOR[offer.status] ?? "bg-gray-50 text-gray-600 border border-gray-100";
+    return (
+      <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full ${color}`}>
+        {label}
+      </span>
+    );
+  };
+
   const renderUserActions = (u: User) => {
     const op = u.originatorProfile;
     return (
@@ -802,6 +835,7 @@ export default function AdminDashboardClient({
                         {new Date(offer.createdAt).toLocaleDateString("pt-BR")} às{" "}
                         {new Date(offer.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                       </p>
+                      <div className="mt-1.5">{renderOfferStatus(offer)}</div>
                     </td>
                     <td className="py-3 px-3">
                       <p className="font-semibold text-gray-800 truncate" title={offer.originator.name}>
@@ -894,9 +928,12 @@ export default function AdminDashboardClient({
                       </a>
                     )}
                   </div>
-                  <p className="font-bold text-gray-900 text-sm whitespace-nowrap shrink-0">
-                    {Number(offer.volume).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                  </p>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <p className="font-bold text-gray-900 text-sm whitespace-nowrap">
+                      {Number(offer.volume).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    </p>
+                    {renderOfferStatus(offer)}
+                  </div>
                 </div>
 
                 <div className="border-t border-gray-100 pt-3 space-y-1 text-xs">

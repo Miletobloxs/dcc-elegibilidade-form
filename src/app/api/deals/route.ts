@@ -428,6 +428,9 @@ export async function POST(request: Request) {
           hubspotDealId,
           hubspotCompanyId: resolvedCompanyId,
           hubspotContactId: resolvedContactId,
+          // Pipeline HubSpot em que o deal foi criado (badge exibe "Triagem")
+          hubspotPipeline: "TRIAGEM",
+          hubspotDealstage: "Nova Oportunidade",
         }
       }
     });
