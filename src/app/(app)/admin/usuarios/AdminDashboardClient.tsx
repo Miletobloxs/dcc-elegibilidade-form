@@ -140,7 +140,7 @@ export default function AdminDashboardClient({
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
 
   // Form states
-  const [userForm, setUserForm] = useState({ name: "", role: "", blocked: false });
+  const [userForm, setUserForm] = useState({ name: "", role: "", blocked: false, email: "" });
   const [originatorForm, setOriginatorForm] = useState({
     name: "",
     cnpj: "",
@@ -185,6 +185,7 @@ export default function AdminDashboardClient({
       name: user.name || "",
       role: user.role,
       blocked: user.blocked,
+      email: user.email || "",
     });
     setError(null);
     setSuccessMessage(null);
@@ -247,6 +248,7 @@ export default function AdminDashboardClient({
           name: userForm.name,
           role: userForm.role,
           blocked: userForm.blocked,
+          email: userForm.email,
         }),
       });
       const data = await res.json();
@@ -255,7 +257,7 @@ export default function AdminDashboardClient({
       setUsers(
         users.map((u) =>
           u.id === editingUser.id
-            ? { ...u, name: userForm.name, role: userForm.role, blocked: userForm.blocked }
+            ? { ...u, name: userForm.name, role: userForm.role, blocked: userForm.blocked, email: userForm.email }
             : u
         )
       );
@@ -982,10 +984,11 @@ export default function AdminDashboardClient({
                   E-mail do Usuário
                 </label>
                 <input
-                  type="text"
-                  value={editingUser.email}
-                  disabled
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm bg-gray-50 text-gray-400 font-medium cursor-not-allowed outline-none"
+                  type="email"
+                  value={userForm.email}
+                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                  disabled={editingUser.email === "carlos.carneiro@bloxs.com.br"}
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                 />
               </div>
 

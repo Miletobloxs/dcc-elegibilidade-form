@@ -26,21 +26,39 @@ export async function PUT(request: Request) {
     const isSuperAdmin = dbUser.role === "SUPER_ADMIN";
 
     const body = await request.json();
-    const { id, name, role, blocked } = body;
+    const { id, name, role, blocked, email } = body;
 
     if (!id) {
       return NextResponse.json({ message: "Campos obrigatórios ausentes." }, { status: 400 });
     }
 
     const targetUser = await prisma.user.findUnique({
-      where: { id }
+      where: { id },
+      include: { originatorProfile: true }
     });
 
-    if (targetUser?.email === "carlos.carneiro@bloxs.com.br" && dbUser.email !== "carlos.carneiro@bloxs.com.br") {
+    if (!targetUser) {
+      return NextResponse.json({ message: "Usuário não encontrado." }, { status: 404 });
+    }
+
+    if (targetUser.email === "carlos.carneiro@bloxs.com.br" && dbUser.email !== "carlos.carneiro@bloxs.com.br") {
       return NextResponse.json(
         { message: "Apenas o próprio Super Admin pode editar seus dados de perfil." },
         { status: 403 }
       );
+    }
+
+    // Check if email is being updated and if it is already taken
+    if (email && email.toLowerCase() !== targetUser.email.toLowerCase()) {
+      const existingEmail = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() }
+      });
+      if (existingEmail) {
+        return NextResponse.json(
+          { message: "Este e-mail já está sendo utilizado por outro usuário." },
+          { status: 400 }
+        );
+      }
     }
 
     // Update user in Prisma. Only SUPER_ADMIN may change the role;
@@ -49,22 +67,34 @@ export async function PUT(request: Request) {
       where: { id },
       data: {
         name,
+        email: email ? email.toLowerCase() : undefined,
         role: isSuperAdmin ? role : undefined,
         blocked: blocked !== undefined ? Boolean(blocked) : undefined,
+        originatorProfile: email && targetUser.originatorProfile ? {
+          update: {
+            email: email.toLowerCase()
+          }
+        } : undefined
       },
       include: { originatorProfile: true }
     });
 
-    // 1. Update Supabase Auth user metadata
+    // 1. Update Supabase Auth user metadata & email
     try {
       const supabaseAdmin = createAdminClient();
-      await supabaseAdmin.auth.admin.updateUserById(id, {
+      const updateData: any = {
         user_metadata: { representativeName: name }
-      });
-      console.log(`Supabase Auth updated: set representativeName = ${name} for user ${id}`);
+      };
+      if (email && email.toLowerCase() !== targetUser.email.toLowerCase()) {
+        updateData.email = email.toLowerCase();
+        updateData.email_confirm = true;
+      }
+      await supabaseAdmin.auth.admin.updateUserById(id, updateData);
+      console.log(`Supabase Auth updated: set metadata & email = ${email} for user ${id}`);
     } catch (authErr) {
-      console.error("Supabase Auth metadata update failed on admin save:", authErr);
+      console.error("Supabase Auth update failed on admin save:", authErr);
     }
+
 
     // 2. Sincronizar com HubSpot se for originador e tiver hubspotContactId
     if (updated.originatorProfile?.hubspotContactId) {
