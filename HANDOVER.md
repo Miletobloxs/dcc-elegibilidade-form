@@ -1,23 +1,18 @@
-# Session Handover - Edição de Originador & Melhoria de Layout HubSpot 🤝
+# Session Handover - Badge de Pipeline "Triagem" & Limpeza de Deals de Teste 🤝
 
 Este documento serve para guiar a continuação do desenvolvimento na próxima sessão/aba.
 
 ## 📊 Status Geral
-* **Layout HubSpot ID**: Ajustado com sucesso. Foi adicionado o componente `CopyableIdTooltip` ao lado dos nomes (Contato e Empresa) na listagem administrativa de usuários, exibindo o ID ao passar o mouse e permitindo copiá-lo ao clicar (evitando quebras e truncamento de texto na tabela).
-* **Edição de Perfil do Originador**: Habilitada a edição de dados comerciais (Razão Social, CNPJ, Telefone e Tipo de Originação) no modal "Editar Perfil" do cabeçalho da plataforma para usuários do tipo `ORIGINADOR`.
-* **API de Atualização de Originadores**: A rota `/api/admin/originators` foi atualizada para aceitar requisições de auto-atualização por parte do próprio originador (validando se o ID editado pertence à conta do usuário logado), protegendo a alteração de campos restritos como `status`, `hubspotCompanyId` e `hubspotContactId` (que continuam editáveis apenas por `ADMIN` e `SUPER_ADMIN`).
-* **Compilação & Deploy**: Build concluído com sucesso e deploy implantado na VPS com reinicialização do PM2.
+* **Badge de Pipeline "Triagem"**: Cards de deals (originador em `/deals/meus` e admin em `/admin/usuarios` > Backup de Deals) agora exibem badge com o pipeline real do deal ("Triagem", âmbar), lido de `metadata.hubspotPipeline`. Deals novos criados pelo formulário bypass já gravam `hubspotPipeline: "TRIAGEM"` e `hubspotDealstage: "Nova Oportunidade"` no metadata.
+* **Abordagem prod-safe**: O badge NÃO usa o enum `OfferStatus.EM_TRIAGEM` nos dados (o valor existe no enum do Postgres e no schema, mas nenhuma linha o usa). Motivo: o banco Supabase é COMPARTILHADO entre dev e produção — gravar um valor de enum que o build de produção não conhece derruba a produção (incidente ocorrido e revertido em 07/07/2026). A migração de `status` para `EM_TRIAGEM` só pode acontecer APÓS todos os builds em produção conhecerem o valor.
+* **Deploy**: Build novo com os badges foi implantado na VPS (PM2) e está no ar em `bypass-originacao.duckdns.org`. Commit `7f38094` na branch `dev` (também em `main`).
+* **Limpeza de deals de teste (13/07/2026)**: Removidos 6 deals de teste (DEAL NOVO TESTE + CRI ABC I, II, III, IV e VI) do Supabase (restam 9 deals reais) e arquivados os 6 correspondentes no HubSpot via API (reversível ~90 dias pela lixeira do HubSpot). Dashboard/estatísticas limpos de ~R$ 60M fictícios.
 
 ## 🚀 Próximos Passos Imediatos
-1. **Validar Edição de Perfil (Parceiro Comercial)**:
-   - Logar com um perfil de originador (ex: `lizoprado@gmail.com`).
-   - Clicar no menu superior -> "Editar Perfil".
-   - Alterar os dados comerciais e verificar se persistem corretamente no banco de dados.
-2. **Validar Edição de Perfil (Admin / Super Admin)**:
-   - Logar como administrador ou superadmin.
-   - Acessar `/admin/usuarios` e testar editar qualquer originador usando o botão verde "Originador".
-3. **Validar Tooltips de ID no HubSpot**:
-   - No painel administrativo `/admin/usuarios`, verificar se a coluna "Sincronização HubSpot" renderiza os nomes seguidos do ícone de informação de forma correta e sem quebras de layout.
+1. **Validar dashboard pós-limpeza**: conferir em produção que `/admin/usuarios` mostra 9 deals e volume originado real.
+2. **(Futuro) Migração do enum EM_TRIAGEM**: quando desejado, migrar `status` dos deals em triagem para `EM_TRIAGEM` e reexpor a opção no dropdown do admin — somente com todos os builds de produção atualizados.
+3. **Backlog do sprint de ajustes finos**: segurança, bugs, UI + features (ADMIN cria deal por originador; originador lista deals próprios). Ver memória do projeto.
 
 ## ⚠️ Bloqueios / Atenção
-* Nenhum bloqueio identificado. A build está limpa e o servidor está online.
+* **Banco compartilhado dev/prod**: qualquer mudança de dados/schema no ambiente local atinge a produção imediatamente. Ordem segura: código (expand) → deploy → migração de dados.
+* Nenhum bloqueio ativo. Build limpa, produção online (HTTP 200).
