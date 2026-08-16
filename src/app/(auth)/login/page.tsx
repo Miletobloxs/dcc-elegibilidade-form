@@ -50,6 +50,11 @@ function LoginForm() {
           router.refresh();
           return;
         }
+        if (data.role === "INVESTIDOR") {
+          router.push("/oportunidades");
+          router.refresh();
+          return;
+        }
       }
     } catch (fetchErr) {
       console.error("Error fetching user role on login:", fetchErr);
@@ -70,7 +75,7 @@ function LoginForm() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="seu@bloxs.com.br"
+            placeholder="seu@email.com.br"
             required
             autoComplete="email"
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
@@ -145,8 +150,8 @@ export default function LoginPage() {
               <path fill="#2E61FF" d="M5.13365 12.9556H19.679C22.9868 12.9556 25.6682 10.2741 25.6682 6.96631C25.6682 3.65848 22.9868 0.977051 19.679 0.977051H3.42243C1.5328 0.977051 0 2.50985 0 4.39948V15.288C1.25541 13.862 3.08904 12.9556 5.13365 12.9556Z"></path>
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Portal de Originação</h1>
-          <p className="text-sm text-gray-500 mt-1">Bloxs — Área interna</p>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Bloxs Workspace</h1>
+          <p className="text-sm text-gray-500 mt-1">Conectamos originadores e investidores no mercado de capitais</p>
         </div>
 
         <Suspense>
@@ -158,7 +163,7 @@ export default function LoginPage() {
         <p className="text-xs text-gray-500">
           Ainda não tem uma conta?{" "}
           <a
-            href="/bypass-cadastro"
+            href="/cadastro"
             className="text-blue-600 font-medium hover:underline"
           >
             Cadastre-se aqui
@@ -176,7 +181,7 @@ export default function LoginPage() {
       </div>
 
       <p className="text-center text-xs text-gray-400 mt-3">
-        Bloxs Capital © {new Date().getFullYear()} — Acesso restrito
+        Bloxs Capital © {new Date().getFullYear()}
       </p>
     </div>
   );

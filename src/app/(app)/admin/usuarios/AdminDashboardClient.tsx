@@ -18,6 +18,7 @@ import {
   Info,
   Plus,
 } from "lucide-react";
+import { CARGOS, segmentLabel } from "@/lib/investor";
 
 interface OriginatorProfile {
   id: string;
@@ -60,9 +61,41 @@ interface Offer {
   createdAt: Date | string;
 }
 
+interface Investor {
+  id: string;
+  name: string | null;
+  email: string;
+  blocked: boolean;
+  createdAt: string;
+  profile: {
+    sectors: string[];
+    instruments: string[];
+    segments: string[];
+    segmentsBySector: Record<string, string[]> | null;
+    sectorOther: string | null;
+    segmentOther: string | null;
+    dealmatchObs: string | null;
+    cellphone: string | null;
+    cpf: string | null;
+    jobTitle: string | null;
+    geoPreferences: string[];
+    ticketMin: number | null;
+    ticketMax: number | null;
+    minRemuneration: string | null;
+    requiresStructurer: boolean | null;
+    minSalesPercent: number | null;
+    minWorksProgress: number | null;
+    companyProfile: Record<string, any> | null;
+    objectives: Record<string, any> | null;
+    onboardingDone: boolean;
+    updatedAt: string;
+  } | null;
+}
+
 interface Props {
   initialUsers: User[];
   initialOffers: Offer[];
+  initialInvestors: Investor[];
   currentRole: string;
   currentEmail: string;
 }
@@ -122,16 +155,268 @@ function CopyableIdTooltip({ label, id }: { label: string; id: string }) {
   );
 }
 
+function formatBRLCompact(value: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+function ChipList({ items, color }: { items: string[]; color: string }) {
+  if (!items.length) return <span className="text-gray-300">—</span>;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {items.map((i) => (
+        <span key={i} className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${color}`}>
+          {i}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function formatCnpjStr(cnpj: string) {
+  const d = cnpj.replace(/\D/g, "");
+  if (d.length !== 14) return cnpj;
+  return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+}
+
+function InvestorsPanel({ investors }: { investors: Investor[] }) {
+  const renderCriteria = (inv: Investor) => {
+    const p = inv.profile;
+    if (!p) return <span className="text-xs text-gray-400 italic">Sem perfil criado</span>;
+    const segmentValues = Object.values(p.segmentsBySector || {}).flat();
+    const segmentLabels = segmentValues.map(segmentLabel);
+    return (
+      <div className="space-y-1.5 text-xs text-gray-500">
+        <div>
+          <span className="font-semibold text-gray-700">Setores:</span>{" "}
+          <ChipList items={p.sectors} color="bg-blue-50 text-blue-600" />
+        </div>
+        {p.sectorOther && (
+          <p>
+            <span className="font-semibold text-gray-700">Setor (outros):</span> {p.sectorOther}
+            {p.segmentOther ? ` · ${p.segmentOther}` : ""}
+          </p>
+        )}
+        <div>
+          <span className="font-semibold text-gray-700">Instrumentos:</span>{" "}
+          <ChipList items={p.instruments} color="bg-indigo-50 text-indigo-600" />
+        </div>
+        {(segmentLabels.length > 0 || p.segments.length > 0) && (
+          <div>
+            <span className="font-semibold text-gray-700">Segmentos:</span>{" "}
+            <ChipList
+              items={segmentLabels.length ? segmentLabels : p.segments}
+              color="bg-purple-50 text-purple-600"
+            />
+          </div>
+        )}
+        <div>
+          <span className="font-semibold text-gray-700">Localidades:</span>{" "}
+          <ChipList
+            items={p.geoPreferences.map((g) => (g === "BRASIL" ? "Todo o Brasil" : g))}
+            color="bg-emerald-50 text-emerald-600"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderFinancials = (inv: Investor) => {
+    const p = inv.profile;
+    if (!p) return <span className="text-gray-300">—</span>;
+    return (
+      <div className="space-y-1 text-xs text-gray-500">
+        <p>
+          <span className="font-semibold text-gray-700">Faixa:</span>{" "}
+          {p.ticketMin !== null || p.ticketMax !== null ? (
+            <span className="text-gray-600 font-medium whitespace-nowrap">
+              {p.ticketMin !== null ? formatBRLCompact(p.ticketMin) : "—"}
+              {" a "}
+              {p.ticketMax !== null ? formatBRLCompact(p.ticketMax) : "—"}
+            </span>
+          ) : (
+            <span className="text-gray-300">não definida</span>
+          )}
+        </p>
+        <p>
+          <span className="font-semibold text-gray-700">Remuneração mín.:</span>{" "}
+          {p.minRemuneration || <span className="text-gray-300">—</span>}
+        </p>
+        <p>
+          <span className="font-semibold text-gray-700">Co-estruturar:</span>{" "}
+          {p.requiresStructurer === null ? (
+            <span className="text-gray-300">—</span>
+          ) : p.requiresStructurer ? (
+            "Sim"
+          ) : (
+            "Não"
+          )}
+        </p>
+        {p.dealmatchObs && (
+          <p className="line-clamp-2" title={p.dealmatchObs}>
+            <span className="font-semibold text-gray-700">Obs. dealmatch:</span> {p.dealmatchObs}
+          </p>
+        )}
+        {(p.minSalesPercent !== null || p.minWorksProgress !== null) && (
+          <p>
+            {p.minSalesPercent !== null && (
+              <span className="mr-2">
+                <span className="font-semibold text-gray-700">Vendas mín.:</span> {p.minSalesPercent}%
+              </span>
+            )}
+            {p.minWorksProgress !== null && (
+              <span>
+                <span className="font-semibold text-gray-700">Obras:</span> {p.minWorksProgress}%
+              </span>
+            )}
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  const renderStatus = (inv: Investor) => (
+    <div className="flex flex-col gap-1.5 items-start">
+      {inv.profile?.onboardingDone ? (
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+          <CheckCircle2 size={11} /> Onboarding completo
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+          <AlertTriangle size={11} /> Onboarding pendente
+        </span>
+      )}
+      {inv.blocked && (
+        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-100">
+          Bloqueado
+        </span>
+      )}
+    </div>
+  );
+
+  if (investors.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+        <p className="font-semibold text-gray-900 text-sm">Nenhum investidor cadastrado ainda</p>
+        <p className="text-xs text-gray-500 mt-1">
+          Os cadastros buy-side feitos em /cadastro-investidor aparecerão aqui.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Desktop */}
+      <div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <th className="py-3 px-4">Investidor</th>
+                <th className="py-3 px-4">Perfil</th>
+                <th className="py-3 px-4">Interesses & Localidades</th>
+                <th className="py-3 px-4">Critérios</th>
+                <th className="py-3 px-4">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 text-sm align-top">
+              {investors.map((inv) => {
+                const cp = (inv.profile?.companyProfile as Record<string, any>) || {};
+                const cargo = CARGOS.find((c) => c.value === inv.profile?.jobTitle)?.label;
+                return (
+                  <tr key={inv.id} className="hover:bg-gray-50/50 transition-colors align-top">
+                    <td className="py-4 px-4">
+                      <p className="font-semibold text-gray-900 break-words">{inv.name || "Sem nome"}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 break-all">{inv.email}</p>
+                      <p className="text-[10px] text-gray-400 mt-1" suppressHydrationWarning>
+                        Desde {new Date(inv.createdAt).toLocaleDateString("pt-BR")}
+                      </p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="space-y-1 text-xs text-gray-500">
+                        {cp.companyName && (
+                          <p>
+                            <span className="font-semibold text-gray-700">Empresa:</span> {cp.companyName}
+                          </p>
+                        )}
+                        {cp.cnpj && (
+                          <p className="font-mono text-gray-400">{formatCnpjStr(String(cp.cnpj))}</p>
+                        )}
+                        {cargo && (
+                          <p>
+                            <span className="font-semibold text-gray-700">Cargo:</span> {cargo}
+                          </p>
+                        )}
+                        {inv.profile?.cellphone && (
+                          <p>
+                            <span className="font-semibold text-gray-700">Celular:</span> {inv.profile.cellphone}
+                          </p>
+                        )}
+                        {inv.profile?.cpf && (
+                          <p>
+                            <span className="font-semibold text-gray-700">CPF:</span>{" "}
+                            <span className="font-mono">{inv.profile.cpf}</span>
+                          </p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">{renderCriteria(inv)}</td>
+                    <td className="py-4 px-4">{renderFinancials(inv)}</td>
+                    <td className="py-4 px-4">{renderStatus(inv)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Mobile */}
+      <div className="md:hidden space-y-3">
+        {investors.map((inv) => {
+          const cp = (inv.profile?.companyProfile as Record<string, any>) || {};
+          return (
+            <div key={inv.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900 break-words">{inv.name || "Sem nome"}</p>
+                  <p className="text-xs text-gray-400 break-all">{inv.email}</p>
+                </div>
+                {renderStatus(inv)}
+              </div>
+              {cp.investorKind && (
+                <p className="text-xs text-gray-500">
+                  <span className="font-semibold text-gray-700">Tipo:</span> {cp.investorKind}
+                  {cp.companyName ? ` · ${cp.companyName}` : ""}
+                </p>
+              )}
+              <div className="border-t border-gray-100 pt-3">{renderCriteria(inv)}</div>
+              <div className="border-t border-gray-100 pt-3">{renderFinancials(inv)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 export default function AdminDashboardClient({
   initialUsers,
   initialOffers,
+  initialInvestors,
   currentRole,
   currentEmail,
 }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<"usuarios" | "deals">("usuarios");
+  const [tab, setTab] = useState<"usuarios" | "deals" | "investidores">("usuarios");
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [offers, setOffers] = useState<Offer[]>(initialOffers);
+  const investors = initialInvestors;
 
   // States for modals
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -639,10 +924,22 @@ export default function AdminDashboardClient({
         >
           Backup de Deals (Supabase)
         </button>
+        <button
+          onClick={() => setTab("investidores")}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all outline-none whitespace-nowrap shrink-0 ${
+            tab === "investidores"
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-900"
+          }`}
+        >
+          Investidores (Buy-side)
+        </button>
       </div>
 
       {/* Tab Panels */}
-      {tab === "usuarios" ? (
+      {tab === "investidores" ? (
+        <InvestorsPanel investors={investors} />
+      ) : tab === "usuarios" ? (
         <>
         <div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">

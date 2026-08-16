@@ -58,6 +58,10 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/api/bypass-cadastro") ||
     pathname.startsWith("/cadastro-interno") ||
     pathname.startsWith("/api/cadastro-interno") ||
+    pathname.startsWith("/cadastro-investidor") ||
+    pathname.startsWith("/api/cadastro-investidor") ||
+    pathname === "/cadastro" ||
+    pathname === "/api/cadastro" ||
     pathname.startsWith("/recuperar-senha") ||
     pathname.startsWith("/auth/callback");
 

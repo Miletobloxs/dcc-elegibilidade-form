@@ -46,10 +46,12 @@ const navGroups: NavGroup[] = [
 
 export default function Sidebar({
   role,
+  hasInvestorProfile = false,
   open = false,
   onClose,
 }: {
   role?: string;
+  hasInvestorProfile?: boolean;
   open?: boolean;
   onClose?: () => void;
 }) {
@@ -70,6 +72,14 @@ export default function Sidebar({
       label: "Administração",
       items: adminItems,
     });
+  } else if (role === "INVESTIDOR") {
+    groups.push({
+      label: "Investimentos",
+      items: [
+        { href: "/oportunidades", label: "Oportunidades", icon: BarChart3 },
+        { href: "/perfil/investidor", label: "Minhas Preferências", icon: Settings },
+      ],
+    });
   } else {
     groups.push({
       label: "Originação",
@@ -78,9 +88,24 @@ export default function Sidebar({
         { href: "/deals/meus", label: "Meus Deals", icon: FileText },
       ],
     });
+    // Perfil "Ambos": originador que também recebe matching de deals
+    if (hasInvestorProfile) {
+      groups.push({
+        label: "Investimentos",
+        items: [
+          { href: "/oportunidades", label: "Oportunidades", icon: BarChart3 },
+          { href: "/perfil/investidor", label: "Minhas Preferências", icon: Settings },
+        ],
+      });
+    }
   }
 
-  const logoHref = (role === "SUPER_ADMIN" || role === "ADMIN") ? "/admin/usuarios" : "/deals/new";
+  const logoHref =
+    role === "SUPER_ADMIN" || role === "ADMIN"
+      ? "/admin/usuarios"
+      : role === "INVESTIDOR"
+      ? "/oportunidades"
+      : "/deals/new";
 
   return (
     <aside

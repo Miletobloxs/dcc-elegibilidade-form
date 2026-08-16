@@ -51,6 +51,12 @@ export default async function AdminUsuariosPage() {
     },
   });
 
+  const investors = await prisma.user.findMany({
+    where: { role: "INVESTIDOR" },
+    include: { investorProfile: true },
+    orderBy: { createdAt: "desc" },
+  });
+
   // Format dates to avoid next.js warning when passing to client component
   const formattedUsers = users.map((u) => ({
     ...u,
@@ -86,10 +92,46 @@ export default async function AdminUsuariosPage() {
       : null,
   }));
 
+  const formattedInvestors = investors.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    blocked: u.blocked,
+    createdAt: u.createdAt.toISOString(),
+    profile: u.investorProfile
+      ? {
+          sectors: u.investorProfile.sectors,
+          instruments: u.investorProfile.instruments,
+          segments: u.investorProfile.segments,
+          segmentsBySector: u.investorProfile.segmentsBySector as Record<string, string[]> | null,
+          sectorOther: u.investorProfile.sectorOther,
+          segmentOther: u.investorProfile.segmentOther,
+          dealmatchObs: u.investorProfile.dealmatchObs,
+          cellphone: u.investorProfile.cellphone,
+          cpf: u.investorProfile.cpf,
+          jobTitle: u.investorProfile.jobTitle,
+          geoPreferences: u.investorProfile.geoPreferences,
+          ticketMin:
+            u.investorProfile.ticketMin === null ? null : Number(u.investorProfile.ticketMin),
+          ticketMax:
+            u.investorProfile.ticketMax === null ? null : Number(u.investorProfile.ticketMax),
+          minRemuneration: u.investorProfile.minRemuneration,
+          requiresStructurer: u.investorProfile.requiresStructurer,
+          minSalesPercent: u.investorProfile.minSalesPercent,
+          minWorksProgress: u.investorProfile.minWorksProgress,
+          companyProfile: u.investorProfile.companyProfile as Record<string, unknown> | null,
+          objectives: u.investorProfile.objectives as Record<string, unknown> | null,
+          onboardingDone: u.investorProfile.onboardingDone,
+          updatedAt: u.investorProfile.updatedAt.toISOString(),
+        }
+      : null,
+  }));
+
   return (
     <AdminDashboardClient
       initialUsers={formattedUsers as any}
       initialOffers={formattedOffers as any}
+      initialInvestors={formattedInvestors as any}
       currentRole={dbUser.role}
       currentEmail={activeUser.email ?? ""}
     />

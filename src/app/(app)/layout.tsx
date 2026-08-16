@@ -31,6 +31,7 @@ export default async function AppLayout({
   // Fetch role from DB
   const dbUser = await prisma.user.findUnique({
     where: { email: activeUser.email ?? "" },
+    include: { investorProfile: { select: { id: true } } },
   });
 
   if (dbUser?.blocked) {
@@ -57,6 +58,7 @@ export default async function AppLayout({
     <>
       <AppShell
         role={role}
+        hasInvestorProfile={!!dbUser?.investorProfile}
         displayName={displayName}
         initials={initials}
         email={activeUser.email ?? ""}

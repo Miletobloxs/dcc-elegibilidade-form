@@ -6,13 +6,14 @@ import Header from "@/components/layout/Header";
 
 type AppShellProps = {
   role?: string;
+  hasInvestorProfile?: boolean;
   displayName: string;
   initials: string;
   email: string;
   children: React.ReactNode;
 };
 
-export default function AppShell({ role, displayName, initials, email, children }: AppShellProps) {
+export default function AppShell({ role, hasInvestorProfile, displayName, initials, email, children }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -26,7 +27,7 @@ export default function AppShell({ role, displayName, initials, email, children 
         />
       )}
 
-      <Sidebar role={role} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar role={role} hasInvestorProfile={hasInvestorProfile} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex flex-1 flex-col min-w-0">
         <Header

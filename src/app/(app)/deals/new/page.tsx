@@ -29,6 +29,7 @@ export default async function NewDealPage() {
   });
 
   const role = dbUser?.role ?? "INVESTIDOR";
+  if (dbUser?.role === "INVESTIDOR") redirect("/oportunidades");
   const canChooseOriginator = role === "ADMIN" || role === "SUPER_ADMIN";
 
   let originators: { id: string; name: string; cnpj: string; status: string }[] = [];

@@ -211,6 +211,8 @@ export async function POST(request: Request) {
       // Step 4 - Credentials
       password,
       type = "JURIDICA",
+      // Perfil "Ambos": origina e também recebe matching de deals (buy-side)
+      alsoInvestor = false,
     } = body;
 
     // ── Validation ──────────────────────────────────────────────────────────
@@ -312,6 +314,17 @@ export async function POST(request: Request) {
         hubspotCompanyId,
       },
     });
+
+    if (alsoInvestor === true) {
+      await prisma.investorProfile.upsert({
+        where: { userId },
+        update: {},
+        create: {
+          userId,
+          companyProfile: { companyName: companyName || name, phone },
+        },
+      });
+    }
 
     return NextResponse.json({
       success: true,

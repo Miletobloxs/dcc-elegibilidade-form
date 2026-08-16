@@ -137,6 +137,12 @@ function SelectField({
 export default function BypassCadastroPage() {
   const [step, setStep] = useState(0);
 
+  // Perfil "Ambos" (origina + recebe matching), vindo da tela de escolha /cadastro
+  const [alsoInvestor] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("perfil") === "ambos";
+  });
+
   // Step 0 - Company
   const [cnpj, setCnpj] = useState("");
   const [razaoSocial, setRazaoSocial] = useState("");
@@ -221,6 +227,7 @@ export default function BypassCadastroPage() {
           // Credentials (Step 2)
           password,
           type: "JURIDICA",
+          alsoInvestor,
         }),
       });
 
@@ -242,7 +249,8 @@ export default function BypassCadastroPage() {
       }
 
       setTimeout(() => {
-        window.location.href = "/deals/new";
+        // "Ambos" segue para o onboarding de preferências de investimento
+        window.location.href = alsoInvestor ? "/onboarding/investidor" : "/deals/new";
       }, 2000);
     } catch (err: any) {
       setError(err.message || "Erro ao processar o cadastro.");
@@ -263,6 +271,14 @@ export default function BypassCadastroPage() {
 
       {/* ── Left panel ── */}
       <div className="w-full md:w-[58%] p-6 sm:p-8 lg:p-10 flex flex-col">
+
+        <a
+          href="/cadastro"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors mb-4 w-fit"
+        >
+          <ArrowLeft size={13} />
+          Escolher outro tipo de conta
+        </a>
 
         <div className="mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 112 28" className="h-7 w-auto">

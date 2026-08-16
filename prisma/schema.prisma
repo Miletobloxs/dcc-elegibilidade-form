@@ -53,18 +53,55 @@ enum UserRole {
 // ============================================
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  role      UserRole @default(INVESTIDOR)
-  name      String?
-  avatar    String?
-  blocked   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  email      String   @unique
+  role       UserRole @default(INVESTIDOR)
+  name       String?
+  avatar     String?
+  blocked    Boolean  @default(false)
+  // Cadastro V2: persona (buy/sell/ambos), aceites (termos/NDA/minuta) e dados da empresa
+  signupData Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   originatorProfile Originator?
+  investorProfile   InvestorProfile?
 
   @@map("users")
+}
+
+model InvestorProfile {
+  id                 String   @id @default(cuid())
+  // Preferências de alocação (planilha Buy Side Onboarding — propriedades de Contato no HubSpot)
+  sectors            String[] @default([]) // area_of_interest (labels)
+  instruments        String[] @default([]) // instrumentos_financeiro (labels)
+  segments           String[] @default([]) // legado (mantido para compat)
+  segmentsBySector   Json?    // { realEstate: [], agribusiness: [], infrastructure: [], judicialAssets: [] } — valores internos HubSpot
+  sectorOther        String?  // area_of_interest_others
+  segmentOther       String?  // segmento livre quando setor "Outros"
+  geoPreferences     String[] @default([]) // UFs (convertidas p/ preferred_location no HubSpot)
+  ticketMin          Decimal? @db.Decimal(15, 2) // minimum_ticket
+  ticketMax          Decimal? @db.Decimal(15, 2) // maximum_ticket
+  minRemuneration    String?  // minimum_return
+  requiresStructurer Boolean? // requires_co_structuring (necessita co-estruturar)
+  minSalesPercent    Int?     // minimum_sales_percentage (condicional Imobiliário)
+  minWorksProgress   Int?     // minimum_construction_progress (condicional Imobiliário)
+  dealmatchObs       String?  // dealmatch_observations
+  // Personalize seu perfil (contato)
+  cellphone          String?
+  cpf                String?
+  jobTitle           String?  // job_title (valores internos: CEO, PARTNER, ...)
+  // Seções flexíveis legadas
+  companyProfile     Json?
+  objectives         Json?
+  onboardingDone     Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("investor_profiles")
 }
 
 model Originator {
