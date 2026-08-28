@@ -62,10 +62,8 @@ export default function Sidebar({
   if (role === "SUPER_ADMIN" || role === "ADMIN") {
     const adminItems: NavItem[] = [
       { href: "/admin/usuarios", label: "Usuários & Cadastros", icon: Users },
+      { href: "/deals/new", label: "Novo Deal", icon: Building2 },
     ];
-    if (role === "SUPER_ADMIN") {
-      adminItems.push({ href: "/deals/new", label: "Novo Deal", icon: Building2 });
-    }
     groups.push({
       label: "Administração",
       items: adminItems,
