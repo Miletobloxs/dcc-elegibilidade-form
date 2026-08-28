@@ -395,8 +395,12 @@ export async function POST(request: Request) {
     const mappedType = isMajorInstrument ? "RCVM_175" : "RCVM_88";
     
     // Default deadline to 6 months from now
+    // deadline (coluna obrigatória): usa o prazo informado pelo originador;
+    // sem prazo informado, grava +6 meses apenas como placeholder interno —
+    // a UI exibe "Prazo não informado" baseada em metadata.captacaoPrazo.
+    const prazoMeses = captacaoPrazo && Number(captacaoPrazo) > 0 ? Number(captacaoPrazo) : null;
     const deadline = new Date();
-    deadline.setMonth(deadline.getMonth() + 6);
+    deadline.setMonth(deadline.getMonth() + (prazoMeses ?? 6));
 
     const offer = await prisma.offer.create({
       data: {

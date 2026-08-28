@@ -63,6 +63,14 @@ function formatDate(iso: string) {
 function DealCard({ offer }: { offer: Offer }) {
   const empresaNome = (offer.metadata?.empresaNome as string) || offer.name;
   const setor = (offer.metadata?.empresaSetor as string) || "—";
+
+  // Prazo real = criação + meses informados no formulário; sem isso, não exibe estimativa
+  const prazoMeses = Number(offer.metadata?.captacaoPrazo) > 0 ? Number(offer.metadata?.captacaoPrazo) : null;
+  let deadlineReal: Date | null = null;
+  if (prazoMeses) {
+    deadlineReal = new Date(offer.createdAt);
+    deadlineReal.setMonth(deadlineReal.getMonth() + prazoMeses);
+  }
   const badge = offerBadge(offer);
 
   return (
@@ -105,7 +113,7 @@ function DealCard({ offer }: { offer: Offer }) {
       <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <Clock size={12} />
-          Prazo: {formatDate(offer.deadline)}
+          {deadlineReal ? `Prazo: ${formatDate(deadlineReal.toISOString())}` : "Prazo não informado"}
         </span>
         <span className="font-medium text-gray-600">{offer.type === "RCVM_175" ? "RCVM 175" : "RCVM 88"}</span>
       </div>
