@@ -1,6 +1,6 @@
 # Handover — Portal Bypass (modo manutenção)
 
-> **Atualizado em 15/08/2026.** Este documento assume que quem lê pode estar voltando ao projeto depois de semanas sem tocá-lo.
+> **Atualizado em 27/08/2026.** Este documento assume que quem lê pode estar voltando ao projeto depois de semanas sem tocá-lo.
 
 ## 🎯 Regra número um: estabilidade
 
@@ -12,7 +12,7 @@ Isso define a prioridade de tudo: **manter no ar e não abrir brecha de seguran�
 
 | Ambiente | Estado |
 |---|---|
-| **Produção** | VPS + PM2, `bypass-originacao.duckdns.org`, HTTP 200. Rodando o commit `7f38094` (**Next 16.1.6**). |
+| **Produção** | VPS + PM2 em `163.176.251.10`, nginx 1.24.0. Responde nos **dois** domínios: `bypass.bloxs.com.br` (novo) e `bypass-originacao.duckdns.org` (antigo, mantido como rollback). Rodando o commit `7f38094` (**Next 16.1.6**). |
 | **Branch `dev`** | 3 commits à frente de produção (ver abaixo). Nada deployado. |
 | **Branch `feature/buy-side-wip`** | Fase buy-side congelada, commit `7ecafff`. Não mergear sem ler a seção correspondente. |
 | **Banco** | Supabase `lpmsuvgqhcjxonajaqed`, região `sa-east-1`. **Compartilhado entre dev e produção.** |
@@ -70,6 +70,24 @@ Resíduo em produção: 3 linhas de teste em `investor_profiles` (`investidor.te
 * **Sem correção disponível:** 5 vulnerabilidades high no toolchain do Prisma (`prisma`, `@prisma/config`, `effect`) na linha 6.x atual. Reavaliar quando sair correção.
 * **Varredura limpa:** nenhuma view, function, ou extensão no schema `public` — nada de `search_path` mutável ou `SECURITY DEFINER` solto. `.env` está no `.gitignore` e nunca foi commitado em nenhum branch.
 * **Resíduo:** `NEXT_PUBLIC_BYPASS_AUTH` existe no `.env` mas não é lida em lugar nenhum do código.
+* 🚨 **AÇÃO PENDENTE — service role key exposta (27/08/2026).** A chave `sb_secret_...` do Supabase foi colada em texto puro num terminal e numa conversa. Ela ignora RLS e dá acesso administrativo total: ler e escrever qualquer tabela, criar usuários, gerar links de recuperação para qualquer e-mail. **Rotacionar** em Settings → API e atualizar o `.env` da VPS. Um token de recovery de `carlos.carneiro@bloxs.com.br` também foi exposto no mesmo episódio.
+
+## 🌐 Domínio
+
+Migrado em 27/08/2026 de `bypass-originacao.duckdns.org` para **`bypass.bloxs.com.br`** (Route 53, registro A → `163.176.251.10`, TTL 60).
+
+Os **dois domínios respondem em paralelo** — de propósito. O duckdns é o rollback e não custa nada manter. Certificado Let's Encrypt único cobre os dois via SAN, válido até **25/11/2026**.
+
+No Supabase, a allowlist de Redirect URLs já aceita `https://bypass.bloxs.com.br/**` e a **Site URL já aponta para o domínio novo** (validado em 27/08/2026 via `auth.admin.generateLink`). Consequência para rollback: os e-mails de recuperação de senha agora caem no domínio novo, então reverter só o DNS não basta — a Site URL precisa voltar junto.
+
+⚠️ **Ao aposentar o duckdns:** se o registro DNS dele for apagado, a renovação automática do certificado falha — o certbot não valida um domínio que não resolve — e derruba o TLS dos **dois**. Antes de largá-lo, reemita só para o novo:
+```bash
+sudo certbot --nginx -d bypass.bloxs.com.br --cert-name bypass.bloxs.com.br
+```
+
+O domínio não aparece no código: os redirects de auth são montados de `window.location.origin` e do `origin` do request. `NEXT_PUBLIC_APP_URL` não é lido em nenhum ponto do `src/` — é config morta, atualizada só por consistência. Trocar de domínio não exige rebuild.
+
+Passo a passo completo e estado de cada fase em `MIGRACAO-DOMINIO.md`.
 
 ## 🚀 Deploy
 
@@ -108,6 +126,7 @@ Se mexeu em algo que toca autenticação ou `src/proxy.ts`, rode também o smoke
 
 1. **Correção de prazo dos deals** — no working tree, sem commit, aguardando teste. Hoje todo card em `/deals/meus` mostra prazo fabricado de +6 meses; o fix passa a usar o prazo informado pelo originador, ou "Prazo não informado". Arquivos: `src/app/(app)/deals/meus/MeusDealsClient.tsx` e `src/app/api/deals/route.ts`.
 2. **Decidir o deploy do Next 16.3.1** — é o que fecha o bypass de middleware em produção. Patch dentro da 16.x, validado, risco baixo mas não nulo.
-3. **Advisories de Auth no Supabase** — proteção contra senha vazada, expiração de OTP e MFA só aparecem no painel (Security Advisor), não dá para inspecionar pelo banco. Conferir se sobrou algo lá.
-4. **Recuperação de senha** — fix pendente de sprints anteriores; verificar o redirect do auth callback.
-5. **Limpezas de baixa prioridade** — tabelas `dcf_projections` e `valuations` com 0 linhas (fase abandonada) e a variável morta `NEXT_PUBLIC_BYPASS_AUTH`. Dado que o projeto é temporário, provavelmente não compensa mexer.
+3. **🚨 Rotacionar a service role key do Supabase** — exposta em 27/08/2026, ver seção de segurança. É a pendência mais urgente da lista.
+4. **Advisories de Auth no Supabase** — proteção contra senha vazada, expiração de OTP e MFA só aparecem no painel (Security Advisor), não dá para inspecionar pelo banco. Conferir se sobrou algo lá.
+5. **Recuperação de senha** — fix pendente de sprints anteriores; verificar o redirect do auth callback.
+6. **Limpezas de baixa prioridade** — tabelas `dcf_projections` e `valuations` com 0 linhas (fase abandonada) e a variável morta `NEXT_PUBLIC_BYPASS_AUTH`. Dado que o projeto é temporário, provavelmente não compensa mexer.
