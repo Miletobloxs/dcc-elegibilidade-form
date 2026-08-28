@@ -1,4 +1,4 @@
-# Deploy — 6 commits de `dev` para produção
+# Deploy — `dev` para produção (9 commits)
 
 > Checklist operacional. Produção acompanha a branch **`main`** (`origin/main` = `7f38094` = commit que está rodando na VPS hoje).
 >
@@ -8,6 +8,7 @@
 
 | Commit | O quê | Risco |
 |---|---|---|
+| `0d0211c` | Checkpoint anterior (já estava em `origin/dev`, produção nunca recebeu) | nenhum — documentação |
 | `aba1780` | RLS em `investor_profiles` | nenhum — já aplicado no banco, o commit é só o SQL documentado |
 | `7097765` | **Next 16.1.6 → 16.3.1** | o único com risco real. Fecha 28 advisories, incluindo bypass de Middleware/Proxy |
 | `22a9ac7` | Mantém `InvestorProfile`/`signupData` no schema | nenhum — só schema, sem `db push` |
@@ -15,6 +16,7 @@
 | `c9bdadf` | Prazo real do deal em vez de placeholder | baixo — muda o que aparece nos cards |
 | `b0782ee` | ADMIN vê "Novo Deal" no menu | baixo — libera item de menu para ADMIN |
 | `a2b8fb7` | Docs da migração de domínio | nenhum — documentação |
+| _(runbook)_ | Este arquivo | nenhum — documentação |
 
 ⚠️ **Nada de `prisma db push` neste deploy.** O schema já está aplicado no banco. Rodar `db push` é desnecessário e arriscado — o banco é compartilhado com produção.
 
@@ -36,7 +38,7 @@
       git push origin main
       git checkout dev
       ```
-      ✅ Esperado: merge sem conflito. `origin/main` passa a apontar para `79f02bd`.
+      ✅ Esperado: merge fast-forward, sem conflito. `origin/main` passa a apontar para o mesmo commit da `dev`.
 
 ---
 
@@ -69,7 +71,7 @@
       git fetch origin
       git checkout main
       git pull origin main
-      git log --oneline -1          # deve mostrar 79f02bd
+      git log --oneline -1          # deve bater com o HEAD da dev
       ```
 - [ ] Instalar dependências (o `package-lock.json` mudou por causa do Next):
       ```bash
@@ -136,5 +138,5 @@ Alternativa equivalente pela tag: `git checkout pre-next-upgrade-2026-08-15` vol
 ## Depois do deploy
 
 - [ ] 🚨 **Rotacionar a service role key do Supabase** (exposta em 27/08/2026) e atualizar o `.env` da VPS. É a pendência mais urgente do projeto — ver `HANDOVER.md`.
-- [ ] Atualizar em `HANDOVER.md` o commit de produção (`7f38094` → `79f02bd`) e a versão do Next (16.1.6 → 16.3.1)
+- [ ] Atualizar em `HANDOVER.md` o commit de produção (`7f38094` → o novo HEAD) e a versão do Next (16.1.6 → 16.3.1)
 - [ ] Avisar os originadores sobre o domínio novo *(fecha a Fase 6 de `MIGRACAO-DOMINIO.md`)*
